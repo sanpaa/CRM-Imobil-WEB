@@ -1,12 +1,46 @@
 /**
  * Supabase Database Client
  * Infrastructure layer - Database connection setup
+ * 
+ * IMPORTANT: Set environment variables for production:
+ * - SUPABASE_URL: Your Supabase project URL
+ * - SUPABASE_KEY: Your Supabase anon key
  */
 const { createClient } = require('@supabase/supabase-js');
 
-const supabaseUrl = process.env.SUPABASE_URL || 'https://ogixrlwohcwdhitigpta.supabase.co';
-const supabaseKey = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9naXhybHdvaGN3ZGhpdGlncHRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ0NDgzNDksImV4cCI6MjA4MDAyNDM0OX0.c02HNZRMZRGjcZcCAZ-U3LMjdUUEfdZwXo-hh5Tr5po';
+// Load from environment variables - fallback values are for development only
+// In production, these MUST be set as environment variables
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
 
-const supabase = createClient(supabaseUrl, supabaseKey);
+let supabase = null;
+
+if (supabaseUrl && supabaseKey) {
+    supabase = createClient(supabaseUrl, supabaseKey);
+} else {
+    console.warn('⚠️  Supabase credentials not configured. Set SUPABASE_URL and SUPABASE_KEY environment variables.');
+    console.warn('⚠️  Running in offline mode - data will not be persisted.');
+    
+    // Create a mock client that always fails gracefully with proper method chaining
+    const createMockQueryBuilder = () => {
+        const errorResponse = { data: null, error: { message: 'Database not configured' } };
+        const builder = {
+            select: () => builder,
+            insert: () => builder,
+            update: () => builder,
+            delete: () => builder,
+            eq: () => builder,
+            single: () => Promise.resolve(errorResponse),
+            limit: () => builder,
+            order: () => builder,
+            then: (resolve) => resolve(errorResponse)
+        };
+        return builder;
+    };
+    
+    supabase = {
+        from: () => createMockQueryBuilder()
+    };
+}
 
 module.exports = supabase;

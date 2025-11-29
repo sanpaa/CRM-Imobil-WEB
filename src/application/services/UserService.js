@@ -4,11 +4,19 @@
  */
 const User = require('../../domain/entities/User');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 
 class UserService {
     constructor(userRepository) {
         this.userRepository = userRepository;
         this.activeTokens = new Set();
+    }
+
+    /**
+     * Generate a cryptographically secure token
+     */
+    _generateSecureToken() {
+        return crypto.randomBytes(32).toString('hex');
     }
 
     /**
@@ -118,12 +126,14 @@ class UserService {
 
     /**
      * Authenticate user with username and password
-     * Falls back to hardcoded admin if database is unavailable
+     * Falls back to environment variables or default admin if database is unavailable
+     * 
+     * For production, set ADMIN_USERNAME and ADMIN_PASSWORD environment variables
      */
     async authenticate(username, password) {
-        // Fallback admin credentials for when database is unavailable
-        const FALLBACK_ADMIN = 'admin';
-        const FALLBACK_PASSWORD = 'admin123';
+        // Fallback admin credentials - use environment variables in production
+        const FALLBACK_ADMIN = process.env.ADMIN_USERNAME || 'admin';
+        const FALLBACK_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
         const user = await this.userRepository.findByUsername(username);
         
@@ -138,8 +148,8 @@ class UserService {
                 return null;
             }
 
-            // Generate a simple token
-            const token = Buffer.from(`${Date.now()}-${Math.random()}`).toString('base64');
+            // Generate a cryptographically secure token
+            const token = this._generateSecureToken();
             this.activeTokens.add(token);
 
             return {
@@ -150,7 +160,7 @@ class UserService {
 
         // Fallback to hardcoded admin (for offline mode or when DB is unavailable)
         if (username === FALLBACK_ADMIN && password === FALLBACK_PASSWORD) {
-            const token = Buffer.from(`${Date.now()}-${Math.random()}`).toString('base64');
+            const token = this._generateSecureToken();
             this.activeTokens.add(token);
 
             return {

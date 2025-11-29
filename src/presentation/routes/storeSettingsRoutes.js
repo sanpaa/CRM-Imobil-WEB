@@ -5,12 +5,20 @@
 const express = require('express');
 const router = express.Router();
 
+/**
+ * Helper to safely convert settings to JSON
+ */
+function toResponseJSON(settings) {
+    if (!settings) return null;
+    return typeof settings.toJSON === 'function' ? settings.toJSON() : settings;
+}
+
 function createStoreSettingsRoutes(storeSettingsService, authMiddleware) {
     // Get store settings (public)
     router.get('/', async (req, res) => {
         try {
             const settings = await storeSettingsService.getSettings();
-            res.json(settings.toJSON ? settings.toJSON() : settings);
+            res.json(toResponseJSON(settings));
         } catch (error) {
             console.error('Error fetching store settings:', error);
             res.status(500).json({ error: 'Failed to fetch store settings' });
@@ -21,9 +29,9 @@ function createStoreSettingsRoutes(storeSettingsService, authMiddleware) {
     router.put('/', authMiddleware, async (req, res) => {
         try {
             const settings = await storeSettingsService.updateSettings(req.body);
-            res.json(settings.toJSON());
+            res.json(toResponseJSON(settings));
         } catch (error) {
-            if (error.message.startsWith('Validation failed')) {
+            if (error.message && error.message.startsWith('Validation failed')) {
                 return res.status(400).json({ error: error.message });
             }
             console.error('Error updating store settings:', error);
@@ -35,9 +43,9 @@ function createStoreSettingsRoutes(storeSettingsService, authMiddleware) {
     router.post('/initialize', authMiddleware, async (req, res) => {
         try {
             const settings = await storeSettingsService.initializeSettings(req.body);
-            res.status(201).json(settings.toJSON());
+            res.status(201).json(toResponseJSON(settings));
         } catch (error) {
-            if (error.message.startsWith('Validation failed')) {
+            if (error.message && error.message.startsWith('Validation failed')) {
                 return res.status(400).json({ error: error.message });
             }
             console.error('Error initializing store settings:', error);
