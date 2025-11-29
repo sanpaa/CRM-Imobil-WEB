@@ -324,7 +324,9 @@ section {
 }
 
 /* When carousel is inside properties-grid, disable grid layout */
-.properties-grid:has(#propertiesCarousel) {
+/* Using :has() with fallback class for browser compatibility */
+.properties-grid:has(#propertiesCarousel),
+.properties-grid.has-carousel {
     display: block;
 }
 
@@ -776,7 +778,6 @@ section {
     width: 50px;
     height: 50px;
     top: 40%;
-    bottom: auto;
     background: var(--primary-color);
     border-radius: 50%;
     opacity: 1;
