@@ -242,6 +242,8 @@ async function loadProperties() {
             `;
             
             propertiesGrid.innerHTML = carouselHTML;
+            // Add fallback class for browsers that don't support :has()
+            propertiesGrid.classList.add('has-carousel');
         }
     } catch (error) {
         console.error('Error loading properties:', error);
