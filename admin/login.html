@@ -270,6 +270,7 @@
     </div>
 
     <script>
+        const API_BASE = 'https://crm-imobil.onrender.com';
         const loginForm = document.getElementById('loginForm');
         const alertMessage = document.getElementById('alertMessage');
         const loginBtn = document.getElementById('loginBtn');
@@ -289,7 +290,7 @@
             alertMessage.classList.remove('show');
 
             try {
-                const response = await fetch('/api/auth/login', {
+                const response = await fetch(`${API_BASE}/api/auth/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

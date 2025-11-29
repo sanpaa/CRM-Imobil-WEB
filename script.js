@@ -174,12 +174,15 @@ function highlightNavigation() {
 
 window.addEventListener('scroll', highlightNavigation);
 
+// API Base URL
+const API_BASE = 'https://crm-imobil.onrender.com';
+
 // Load and display properties with carousel
 async function loadProperties() {
     const propertiesGrid = document.getElementById('propertiesGrid');
     
     try {
-        const response = await fetch('/api/properties');
+        const response = await fetch(`${API_BASE}/api/properties`);
         const properties = await response.json();
         
         // Filter out sold properties for main site

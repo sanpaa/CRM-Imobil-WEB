@@ -1,3 +1,6 @@
+// API Base URL
+const API_BASE = 'https://crm-imobil.onrender.com';
+
 // Get property ID from URL
 const urlParams = new URLSearchParams(window.location.search);
 const propertyId = urlParams.get('id');
@@ -14,7 +17,7 @@ async function loadProperty() {
     }
 
     try {
-        const response = await fetch(`/api/properties/${propertyId}`);
+        const response = await fetch(`${API_BASE}/api/properties/${propertyId}`);
         
         if (!response.ok) {
             throw new Error('Property not found');
