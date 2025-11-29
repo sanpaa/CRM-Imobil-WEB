@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { Property, PropertyFilters } from '../models/property.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PropertyService {
-  private apiUrl = '/api/properties';
+  private apiUrl = `${environment.apiUrl}/api/properties`;
   private propertiesSubject = new BehaviorSubject<Property[]>([]);
   public properties$ = this.propertiesSubject.asObservable();
 
@@ -36,15 +37,15 @@ export class PropertyService {
   uploadImages(files: File[]): Observable<{ imageUrls: string[] }> {
     const formData = new FormData();
     files.forEach(file => formData.append('images', file));
-    return this.http.post<{ imageUrls: string[] }>('/api/upload', formData);
+    return this.http.post<{ imageUrls: string[] }>(`${environment.apiUrl}/api/upload`, formData);
   }
 
   geocodeAddress(address: string): Observable<{ lat: number; lng: number }> {
-    return this.http.post<{ lat: number; lng: number }>('/api/geocode', { address });
+    return this.http.post<{ lat: number; lng: number }>(`${environment.apiUrl}/api/geocode`, { address });
   }
 
   lookupCEP(cep: string): Observable<any> {
-    return this.http.get(`/api/cep/${cep}`);
+    return this.http.get(`${environment.apiUrl}/api/cep/${cep}`);
   }
 
   filterProperties(properties: Property[], filters: PropertyFilters): Property[] {

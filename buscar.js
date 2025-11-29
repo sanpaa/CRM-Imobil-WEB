@@ -1,4 +1,5 @@
 // Search page functionality
+const API_BASE = 'https://crm-imobil.onrender.com';
 let allProperties = [];
 let filteredProperties = [];
 let currentPage = 1;
@@ -33,7 +34,7 @@ async function loadAllProperties() {
     showSkeleton();
     
     try {
-        const response = await fetch('/api/properties');
+        const response = await fetch(`${API_BASE}/api/properties`);
         allProperties = await response.json();
         
         // Filter out sold properties

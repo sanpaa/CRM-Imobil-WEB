@@ -1,4 +1,5 @@
-const API_URL = '/api/properties';
+const API_BASE = 'https://crm-imobil.onrender.com';
+const API_URL = `${API_BASE}/api/properties`;
 let properties = [];
 let editingId = null;
 
@@ -12,7 +13,7 @@ async function checkAuth() {
     }
     
     try {
-        const response = await fetch('/api/auth/verify', {
+        const response = await fetch(`${API_BASE}/api/auth/verify`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -38,7 +39,7 @@ async function logout() {
     
     if (token) {
         try {
-            await fetch('/api/auth/logout', {
+            await fetch(`${API_BASE}/api/auth/logout`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -56,7 +57,7 @@ async function logout() {
 // Load dashboard stats
 async function loadStats() {
     try {
-        const response = await fetch('/api/stats');
+        const response = await fetch(`${API_BASE}/api/stats`);
         const stats = await response.json();
         
         const statsSection = document.getElementById('statsSection');
@@ -189,7 +190,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             btnAiSuggest.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analisando com IA...';
             
             try {
-                const response = await fetch('/api/ai/suggest', {
+                const response = await fetch(`${API_BASE}/api/ai/suggest`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ title, description, type, bedrooms, bathrooms, area, city, neighborhood })
@@ -315,7 +316,7 @@ async function handleCEPLookup() {
     }
     
     try {
-        const response = await fetch(`/api/cep/${cep}`);
+        const response = await fetch(`${API_BASE}/api/cep/${cep}`);
         
         if (!response.ok) {
             alert('CEP não encontrado');
@@ -342,7 +343,7 @@ async function handleCEPLookup() {
 // Geocode address to get lat/lng
 async function geocodeAddress(address) {
     try {
-        const response = await fetch('/api/geocode', {
+        const response = await fetch(`${API_BASE}/api/geocode`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -516,7 +517,7 @@ async function handleFormSubmit(e) {
         }
         
         try {
-            const uploadResponse = await fetch('/api/upload', {
+            const uploadResponse = await fetch(`${API_BASE}/api/upload`, {
                 method: 'POST',
                 body: formData
             });
