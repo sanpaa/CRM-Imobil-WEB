@@ -98,6 +98,11 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     this.filteredProperties = this.propertyService.filterProperties(this.allProperties, this.filters);
     this.currentPage = 1;
     this.sortProperties();
+    
+    // Update map markers if in map view
+    if (this.currentView === 'map' && this.map) {
+      this.updateMapMarkers();
+    }
   }
   
   clearFilters(): void {
@@ -196,10 +201,18 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
+    // Check if Leaflet is loaded
+    if (typeof L === 'undefined') {
+      console.error('Leaflet library not loaded! Make sure leaflet.js is included in index.html');
+      return;
+    }
+
     console.log('Initializing map...');
+    console.log('Properties to display:', this.filteredProperties.length);
+    console.log('Properties with coordinates:', this.filteredProperties.filter(p => p.latitude && p.longitude).length);
     
     // Configure default Leaflet icon (must be done after L is loaded from CDN)
-    if (typeof L !== 'undefined' && L.Icon && L.Icon.Default) {
+    if (L.Icon && L.Icon.Default) {
       const iconDefault = L.icon({
         iconRetinaUrl: iconRetinaUrl,
         iconUrl: iconUrl,
@@ -241,6 +254,15 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     const validProperties = this.filteredProperties.filter(p => p.latitude && p.longitude);
     
     console.log(`Found ${validProperties.length} properties with coordinates out of ${this.filteredProperties.length} total`);
+    
+    // Log sample property data for debugging
+    if (this.filteredProperties.length > 0) {
+      console.log('Sample property data:', {
+        first: this.filteredProperties[0],
+        hasLat: this.filteredProperties[0]?.latitude,
+        hasLng: this.filteredProperties[0]?.longitude
+      });
+    }
 
     if (validProperties.length === 0) {
       console.warn('No properties with valid coordinates');
