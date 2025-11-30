@@ -194,9 +194,11 @@ export class SearchComponent implements OnInit, AfterViewInit {
     // Default center (São Paulo)
     this.map = L.map('map').setView([-23.550520, -46.633308], 12);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-      maxZoom: 19
+    // Add CartoDB Positron tiles - cleaner, easier to see style
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 20
     }).addTo(this.map);
 
     console.log('Map initialized, adding markers...');
@@ -247,22 +249,21 @@ export class SearchComponent implements OnInit, AfterViewInit {
 
       bounds.push([lat, lng]);
 
-      // Create custom icon for featured properties (gold star) exactly like original
+      // Create custom icon for properties - featured get gold star, others get blue house icon
       const icon = property.featured ? 
         L.divIcon({
-          html: '<div style="background: #FFD700; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"><i class="fas fa-star" style="color: white; font-size: 16px;"></i></div>',
-          className: '',
-          iconSize: [30, 30],
-          iconAnchor: [15, 15],
-          popupAnchor: [0, -15]
+          html: '<div style="background: linear-gradient(135deg, #FFD700, #FFA500); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 8px rgba(0,0,0,0.4); border: 2px solid white;"><i class="fas fa-star" style="color: white; font-size: 18px;"></i></div>',
+          className: 'custom-marker',
+          iconSize: [36, 36],
+          iconAnchor: [18, 18],
+          popupAnchor: [0, -18]
         }) :
-        L.icon({
-          iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-          iconSize: [25, 41],
-          iconAnchor: [12, 41],
-          popupAnchor: [1, -34],
-          shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-          shadowSize: [41, 41]
+        L.divIcon({
+          html: '<div style="background: linear-gradient(135deg, #004AAD, #0066CC); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 8px rgba(0,0,0,0.4); border: 2px solid white;"><i class="fas fa-home" style="color: white; font-size: 16px;"></i></div>',
+          className: 'custom-marker',
+          iconSize: [32, 32],
+          iconAnchor: [16, 16],
+          popupAnchor: [0, -16]
         });
 
       const images = property.imageUrls || (property.imageUrl ? [property.imageUrl] : []);
