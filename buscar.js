@@ -147,11 +147,11 @@ function sortProperties() {
 function renderResults() {
     const resultsGrid = document.getElementById('resultsGrid');
     const resultsCount = document.getElementById('resultsCount');
-    
+
     // Update count
     const totalResults = filteredProperties.length;
     resultsCount.textContent = `${totalResults} ${totalResults === 1 ? 'imóvel encontrado' : 'imóveis encontrados'}`;
-    
+
     if (totalResults === 0) {
         resultsGrid.innerHTML = `
             <div class="no-results">
@@ -164,29 +164,34 @@ function renderResults() {
             </div>
         `;
         document.getElementById('pagination').innerHTML = '';
+
+        // Update map markers even when no results
+        if (currentView === 'map' && map) {
+            updateMapMarkers();
+        }
         return;
     }
-    
+
     // Calculate pagination
     const totalPages = Math.ceil(totalResults / propertiesPerPage);
     const startIndex = (currentPage - 1) * propertiesPerPage;
     const endIndex = Math.min(startIndex + propertiesPerPage, totalResults);
     const currentProperties = filteredProperties.slice(startIndex, endIndex);
-    
+
     // Render properties
     resultsGrid.innerHTML = currentProperties.map(property => {
         const images = property.imageUrls || (property.imageUrl ? [property.imageUrl] : []);
         const firstImage = images.length > 0 ? images[0] : null;
-        const location = property.city ? 
-            `${property.neighborhood || ''}, ${property.city} - ${property.state}` : 
+        const location = property.city ?
+            `${property.neighborhood || ''}, ${property.city} - ${property.state}` :
             (property.location || 'Localização não informada');
-        
+
         return `
             <div class="property-card ${property.featured ? 'featured' : ''}">
                 <a href="/imovel.html?id=${property._id || property.id}" class="property-link">
                     <div class="property-image">
-                        ${firstImage ? 
-                            `<img src="${firstImage}" alt="${property.title}" loading="lazy" onerror="this.parentElement.innerHTML='<i class=\\'fas fa-image fa-3x\\'></i>'">` : 
+                        ${firstImage ?
+                            `<img src="${firstImage}" alt="${property.title}" loading="lazy" onerror="this.parentElement.innerHTML='<i class=\\'fas fa-image fa-3x\\'></i>'">` :
                             '<i class="fas fa-image fa-3x"></i>'
                         }
                         ${property.featured ? '<span class="property-badge badge-featured"><i class="fas fa-star"></i> Destaque</span>' : ''}
@@ -207,12 +212,12 @@ function renderResults() {
                     </div>
                 </a>
                 <div class="property-actions">
-                    <a href="https://wa.me/${property.contact.replace(/\D/g, '')}?text=Olá, tenho interesse no imóvel: ${encodeURIComponent(property.title)}" 
+                    <a href="https://wa.me/${property.contact.replace(/\D/g, '')}?text=Olá, tenho interesse no imóvel: ${encodeURIComponent(property.title)}"
                        class="btn btn-primary" target="_blank" style="flex: 1;">
                         <i class="fab fa-whatsapp"></i> Tenho Interesse
                     </a>
                     ${property.latitude && property.longitude ? `
-                    <a href="https://www.google.com/maps?q=${property.latitude},${property.longitude}" 
+                    <a href="https://www.google.com/maps?q=${property.latitude},${property.longitude}"
                        class="btn btn-secondary" target="_blank" title="Ver no Google Maps">
                         <i class="fas fa-map-marked-alt"></i> Ver no Maps
                     </a>
@@ -221,10 +226,15 @@ function renderResults() {
             </div>
         `;
     }).join('');
-    
+
     // Render pagination
     renderPagination(totalPages);
-    
+
+    // Update map markers if in map view
+    if (currentView === 'map' && map) {
+        updateMapMarkers();
+    }
+
     // Scroll to top of results
     window.scrollTo({ top: 300, behavior: 'smooth' });
 }
