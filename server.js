@@ -9,6 +9,9 @@
  * - Presentation: Routes, Controllers, Middleware
  */
 
+// Load environment variables from .env file
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -379,6 +382,21 @@ async function startServer() {
             console.log('  - Store Settings: /api/store-settings');
             console.log('  - Users: /api/users');
             console.log('  - Auth: /api/auth');
+            console.log('');
+            
+            // Check environment configuration
+            const hasSupabase = process.env.SUPABASE_URL && 
+                              process.env.SUPABASE_KEY &&
+                              !process.env.SUPABASE_URL.includes('your-project-id') &&
+                              !process.env.SUPABASE_KEY.includes('your-anon-key-here');
+            if (hasSupabase) {
+                console.log('Database: ✅ Supabase connected');
+            } else {
+                console.log('Database: ⚠️  OFFLINE MODE (read-only)');
+                console.log('           Configure .env to enable full functionality');
+                console.log('           See DATABASE_SETUP.md for instructions');
+            }
+            
             console.log('='.repeat(50));
         });
     } catch (error) {
