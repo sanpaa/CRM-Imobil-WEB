@@ -48,7 +48,9 @@ function createPropertyRoutes(propertyService) {
             const property = await propertyService.createProperty(req.body);
             if (!property) {
                 return res.status(503).json({ 
-                    error: 'Database not available. Property cannot be created in offline mode. Please configure SUPABASE_URL and SUPABASE_KEY environment variables.' 
+                    error: 'Database not available. Property cannot be created in offline mode. Please configure SUPABASE_URL and SUPABASE_KEY environment variables.',
+                    details: 'O banco de dados Supabase não está configurado. Configure as variáveis de ambiente para habilitar criação de imóveis.',
+                    documentation: 'Veja DATABASE_SETUP.md (local) ou DEPLOY_RENDER.md (Render) para instruções completas.'
                 });
             }
             res.status(201).json(property.toJSON());
@@ -67,7 +69,9 @@ function createPropertyRoutes(propertyService) {
             const property = await propertyService.updateProperty(req.params.id, req.body);
             if (!property) {
                 return res.status(503).json({ 
-                    error: 'Database not available. Property cannot be updated in offline mode. Please configure SUPABASE_URL and SUPABASE_KEY environment variables.' 
+                    error: 'Database not available. Property cannot be updated in offline mode. Please configure SUPABASE_URL and SUPABASE_KEY environment variables.',
+                    details: 'O banco de dados Supabase não está configurado. Configure as variáveis de ambiente para habilitar atualização de imóveis.',
+                    documentation: 'Veja DATABASE_SETUP.md (local) ou DEPLOY_RENDER.md (Render) para instruções completas.'
                 });
             }
             res.json(property.toJSON());
