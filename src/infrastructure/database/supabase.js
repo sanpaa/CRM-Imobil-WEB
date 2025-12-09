@@ -7,34 +7,16 @@
  * - SUPABASE_KEY: Your Supabase anon key
  */
 const { createClient } = require('@supabase/supabase-js');
+const { hasValidSupabaseCredentials } = require('../../utils/envUtils');
 
 // Load from environment variables - fallback values are for development only
 // In production, these MUST be set as environment variables
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
 
-// Check if credentials are real (not placeholders)
-const isPlaceholder = (value) => {
-    if (!value) return true;
-    const placeholderPatterns = [
-        'your-project-id',
-        'your-anon-key-here',
-        'xxxxx',
-        'TODO',
-        'REPLACE'
-    ];
-    return placeholderPatterns.some(pattern => 
-        value.toLowerCase().includes(pattern.toLowerCase())
-    );
-};
-
-const hasValidCredentials = supabaseUrl && supabaseKey && 
-                           !isPlaceholder(supabaseUrl) && 
-                           !isPlaceholder(supabaseKey);
-
 let supabase = null;
 
-if (hasValidCredentials) {
+if (hasValidSupabaseCredentials(supabaseUrl, supabaseKey)) {
     supabase = createClient(supabaseUrl, supabaseKey);
     console.log('✅ Supabase configured successfully');
 } else {

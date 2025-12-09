@@ -18,6 +18,7 @@ const path = require('path');
 const rateLimit = require('express-rate-limit');
 const axios = require('axios');
 const multer = require('multer');
+const { hasValidSupabaseCredentials } = require('./src/utils/envUtils');
 
 // Import Onion Architecture components
 const { SupabasePropertyRepository, SupabaseStoreSettingsRepository, SupabaseUserRepository } = require('./src/infrastructure/repositories');
@@ -385,10 +386,10 @@ async function startServer() {
             console.log('');
             
             // Check environment configuration
-            const hasSupabase = process.env.SUPABASE_URL && 
-                              process.env.SUPABASE_KEY &&
-                              !process.env.SUPABASE_URL.includes('your-project-id') &&
-                              !process.env.SUPABASE_KEY.includes('your-anon-key-here');
+            const hasSupabase = hasValidSupabaseCredentials(
+                process.env.SUPABASE_URL,
+                process.env.SUPABASE_KEY
+            );
             if (hasSupabase) {
                 console.log('Database: ✅ Supabase connected');
             } else {
