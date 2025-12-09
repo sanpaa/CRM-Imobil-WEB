@@ -46,6 +46,11 @@ function createPropertyRoutes(propertyService) {
     router.post('/', async (req, res) => {
         try {
             const property = await propertyService.createProperty(req.body);
+            if (!property) {
+                return res.status(503).json({ 
+                    error: 'Database not available. Property cannot be created in offline mode. Please configure SUPABASE_URL and SUPABASE_KEY environment variables.' 
+                });
+            }
             res.status(201).json(property.toJSON());
         } catch (error) {
             if (error.message.startsWith('Validation failed')) {
@@ -60,6 +65,11 @@ function createPropertyRoutes(propertyService) {
     router.put('/:id', async (req, res) => {
         try {
             const property = await propertyService.updateProperty(req.params.id, req.body);
+            if (!property) {
+                return res.status(503).json({ 
+                    error: 'Database not available. Property cannot be updated in offline mode. Please configure SUPABASE_URL and SUPABASE_KEY environment variables.' 
+                });
+            }
             res.json(property.toJSON());
         } catch (error) {
             if (error.message === 'Property not found') {
