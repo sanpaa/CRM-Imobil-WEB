@@ -185,7 +185,7 @@ class SupabasePropertyRepository extends IPropertyRepository {
                 .single();
 
             if (error) {
-                if (error.message?.includes('fetch failed') || error.message?.includes('ENOTFOUND')) {
+                if (error.message?.includes('fetch failed') || error.message?.includes('ENOTFOUND') || error.message?.includes('Database not configured')) {
                     console.warn('Database connection failed - cannot create property in offline mode');
                     return null;
                 }
@@ -236,7 +236,7 @@ class SupabasePropertyRepository extends IPropertyRepository {
 
             if (error) {
                 if (error.code === 'PGRST116') return null; // Not found
-                if (error.message?.includes('fetch failed') || error.message?.includes('ENOTFOUND')) {
+                if (error.message?.includes('fetch failed') || error.message?.includes('ENOTFOUND') || error.message?.includes('Database not configured')) {
                     console.warn('Database connection failed - cannot update property in offline mode');
                     return null;
                 }
@@ -260,7 +260,7 @@ class SupabasePropertyRepository extends IPropertyRepository {
                 .eq('id', id);
 
             if (error) {
-                if (error.message?.includes('fetch failed') || error.message?.includes('ENOTFOUND')) {
+                if (error.message?.includes('fetch failed') || error.message?.includes('ENOTFOUND') || error.message?.includes('Database not configured')) {
                     console.warn('Database connection failed - cannot delete property in offline mode');
                     return false;
                 }
