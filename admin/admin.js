@@ -551,8 +551,27 @@ async function handleFormSubmit(e) {
     const imageUrlsText = document.getElementById('imageUrls').value.trim();
     const textImageUrls = imageUrlsText ? imageUrlsText.split('\n').filter(url => url.trim()).map(url => url.trim()) : [];
     
+    // Get existing images when editing (to preserve them if no new images provided)
+    let existingImageUrls = [];
+    if (editingId) {
+        const property = properties.find(p => p.id === editingId);
+        if (property) {
+            existingImageUrls = property.imageUrls || (property.imageUrl ? [property.imageUrl] : []);
+        }
+    }
+    
     // Combine uploaded images and text URLs
-    const imageUrls = [...uploadedImageUrls, ...textImageUrls];
+    // If both are empty and we're editing, preserve existing images
+    let imageUrls;
+    if (uploadedImageUrls.length > 0 || textImageUrls.length > 0) {
+        imageUrls = [...uploadedImageUrls, ...textImageUrls];
+    } else if (editingId) {
+        // Editing but no new images provided - keep existing images
+        imageUrls = existingImageUrls;
+    } else {
+        // Creating new property with no images
+        imageUrls = [];
+    }
 
     // Parse price (remove formatting)
     const priceValue = document.getElementById('price').value;

@@ -165,8 +165,15 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   switchView(view: 'grid' | 'map'): void {
     this.currentView = view;
     if (view === 'map') {
-      // Give Angular time to render the map div
-      setTimeout(() => this.initMap(), 300);
+      // Give Angular time to render the map div and ensure Leaflet is loaded
+      setTimeout(() => {
+        // Check if Leaflet is loaded
+        if (typeof L === 'undefined') {
+          console.error('Leaflet library not loaded! Please check if leaflet.js is included in index.html');
+          return;
+        }
+        this.initMap();
+      }, 500);
     } else {
       // When switching away from map view, clean up the map reference
       // because *ngIf will destroy the DOM element
@@ -188,16 +195,25 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   }
   
   private initMap(): void {
+    const mapElement = document.getElementById('map');
+    if (!mapElement) {
+      console.error('Map element not found! Waiting for DOM...');
+      // Try again after a short delay
+      setTimeout(() => {
+        const retryElement = document.getElementById('map');
+        if (retryElement) {
+          this.initMap();
+        } else {
+          console.error('Map element still not found after retry!');
+        }
+      }, 200);
+      return;
+    }
+
     if (this.map) {
       // Map already exists, just update markers and invalidate size
       this.map.invalidateSize();
       this.updateMapMarkers();
-      return;
-    }
-
-    const mapElement = document.getElementById('map');
-    if (!mapElement) {
-      console.error('Map element not found!');
       return;
     }
 
