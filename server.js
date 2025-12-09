@@ -15,6 +15,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 const rateLimit = require('express-rate-limit');
 const axios = require('axios');
 const multer = require('multer');
@@ -32,6 +33,17 @@ const PORT = process.env.PORT || 3000;
 
 // Trust proxy - required when behind a reverse proxy (Render, Vercel, etc.)
 app.set('trust proxy', 1);
+
+// Check if Angular build exists at startup (for performance)
+const angularIndexPath = path.join(__dirname, 'frontend/dist/frontend/browser/index.html');
+const angularBuildExists = fs.existsSync(angularIndexPath);
+
+if (!angularBuildExists) {
+    console.warn('');
+    console.warn('⚠️  Angular app not built - frontend routes will show build instructions');
+    console.warn('⚠️  Run: npm run build:prod');
+    console.warn('');
+}
 
 // Configure multer for memory storage (files will be uploaded to Supabase Storage)
 const storage = multer.memoryStorage();
@@ -359,12 +371,8 @@ app.post('/api/geocode', async (req, res) => {
 
 // Serve Angular app for all other routes (SPA routing)
 app.use((req, res) => {
-    const indexPath = path.join(__dirname, 'frontend/dist/frontend/browser/index.html');
-    
-    // Check if Angular build exists
-    const fs = require('fs');
-    if (fs.existsSync(indexPath)) {
-        res.sendFile(indexPath);
+    if (angularBuildExists) {
+        res.sendFile(angularIndexPath);
     } else {
         // Angular app not built - provide helpful error message
         res.status(503).send(`
