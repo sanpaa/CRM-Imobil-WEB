@@ -7,6 +7,7 @@
  * - SUPABASE_KEY: Your Supabase anon key
  */
 const { createClient } = require('@supabase/supabase-js');
+const { hasValidSupabaseCredentials } = require('../../utils/envUtils');
 
 // Load from environment variables - fallback values are for development only
 // In production, these MUST be set as environment variables
@@ -15,11 +16,29 @@ const supabaseKey = process.env.SUPABASE_KEY;
 
 let supabase = null;
 
-if (supabaseUrl && supabaseKey) {
+if (hasValidSupabaseCredentials(supabaseUrl, supabaseKey)) {
     supabase = createClient(supabaseUrl, supabaseKey);
+    console.log('✅ Supabase configured successfully');
 } else {
-    console.warn('⚠️  Supabase credentials not configured. Set SUPABASE_URL and SUPABASE_KEY environment variables.');
-    console.warn('⚠️  Running in offline mode - data will not be persisted.');
+    console.warn('');
+    console.warn('⚠️  ═══════════════════════════════════════════════════════════════');
+    console.warn('⚠️  SUPABASE NOT CONFIGURED - RUNNING IN OFFLINE MODE');
+    console.warn('⚠️  ═══════════════════════════════════════════════════════════════');
+    console.warn('⚠️  ');
+    console.warn('⚠️  The application is running in READ-ONLY mode with local data.');
+    console.warn('⚠️  ');
+    console.warn('⚠️  To enable full functionality:');
+    console.warn('⚠️  1. Create a .env file: cp .env.example .env');
+    console.warn('⚠️  2. Sign up at https://supabase.com');
+    console.warn('⚠️  3. Create a new project');
+    console.warn('⚠️  4. Get credentials from Settings > API');
+    console.warn('⚠️  5. Update .env with SUPABASE_URL and SUPABASE_KEY');
+    console.warn('⚠️  6. Create a public bucket named "property-images"');
+    console.warn('⚠️  7. Restart the server');
+    console.warn('⚠️  ');
+    console.warn('⚠️  See QUICKSTART.md for detailed instructions.');
+    console.warn('⚠️  ═══════════════════════════════════════════════════════════════');
+    console.warn('');
     
     // Create a mock client that always fails gracefully with proper method chaining
     const createMockQueryBuilder = () => {

@@ -3,10 +3,39 @@
 ## Prerequisites
 - Node.js 20+ and npm
 - Git
+- (Optional) Supabase account for database and file storage
 
 ## Installation & Running
 
-### 1. Install Dependencies
+### 1. Configure Environment Variables
+
+```bash
+# Copy the environment example file
+cp .env.example .env
+```
+
+Then edit `.env` file and configure:
+
+**For local development without Supabase (Offline Mode):**
+- Leave `SUPABASE_URL` and `SUPABASE_KEY` with default values
+- The app will run in offline mode using local JSON files
+- ⚠️ **Note**: In offline mode, you cannot create/update/delete properties or upload images
+
+**For full functionality with Supabase:**
+1. Create a free Supabase account at https://supabase.com
+2. Create a new project
+3. Get your project URL and anon key from Settings > API
+4. Update `.env` file:
+   ```
+   SUPABASE_URL=https://your-project-id.supabase.co
+   SUPABASE_KEY=your-anon-key-here
+   ```
+5. Create a public storage bucket named `property-images` in Supabase:
+   - Go to Storage > Create Bucket
+   - Name: `property-images`
+   - Make public: Yes
+
+### 2. Install Dependencies
 ```bash
 # Install root dependencies (Express server)
 npm install
@@ -17,7 +46,7 @@ npm install
 cd ..
 ```
 
-### 2. Build & Run Production
+### 3. Build & Run Production
 
 ```bash
 # Build Angular and start server (single command)
@@ -26,7 +55,11 @@ npm start
 
 The app will be available at: **http://localhost:3000**
 
-### 3. Development Mode
+**Important Notes:**
+- If running in **offline mode** (without Supabase), the application will display read-only data from local JSON files
+- To enable full functionality (create/edit/delete properties, upload images), configure Supabase as described above
+
+### 4. Development Mode
 
 For development with hot reload:
 
@@ -178,6 +211,34 @@ sanpaa/
 3. Or click delete icon (🗑️) and confirm
 
 ## Troubleshooting
+
+### Database not available / Cannot create property
+
+**Error**: "Database not available. Property cannot be created in offline mode. Please configure SUPABASE_URL and SUPABASE_KEY environment variables."
+
+**Solution**:
+1. Create a `.env` file if it doesn't exist:
+   ```bash
+   cp .env.example .env
+   ```
+2. Configure Supabase credentials in `.env`:
+   - Sign up at https://supabase.com
+   - Create a new project
+   - Get your URL and KEY from Settings > API
+   - Update `.env` with your credentials
+3. Create the `property-images` bucket in Supabase Storage (Storage > Create Bucket > Make public)
+4. Restart the server
+
+### Image upload errors
+
+**Error**: "Erro ao fazer upload das imagens. Continuando com URLs fornecidas."
+
+**Solution**:
+1. Verify Supabase is configured (see above)
+2. Ensure the `property-images` bucket exists in Supabase Storage
+3. Verify the bucket is set to **public**
+4. Check that SUPABASE_URL and SUPABASE_KEY are correct in `.env`
+5. Restart the server after configuration changes
 
 ### Build fails
 ```bash
