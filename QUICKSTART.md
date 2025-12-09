@@ -280,14 +280,19 @@ npm run ng serve -- --proxy-config proxy.conf.json
 1. **Customize Content**: Update property information, contact details
 2. **Add Properties**: Use admin panel to add real properties
 3. **Configure WhatsApp**: Update phone numbers in components
-4. **Deploy**: Follow deployment guide in README_ANGULAR.md
+4. **Deploy**: 
+   - For Render: See [DEPLOY_RENDER.md](./DEPLOY_RENDER.md)
+   - For Vercel: See [DEPLOY_VERCEL.md](./DEPLOY_VERCEL.md)
 5. **Security**: Change admin password in production
 
 ## Documentation
 
+- **QUICKSTART.md**: This file - Quick start for local development
+- **DATABASE_SETUP.md**: Complete Supabase configuration guide
+- **DEPLOY_RENDER.md**: Deploy to Render hosting (recommended)
+- **DEPLOY_VERCEL.md**: Deploy to Vercel hosting
 - **README_ANGULAR.md**: Full technical documentation
 - **MIGRATION_SUMMARY.md**: Migration details and metrics
-- **QUICKSTART.md**: This file
 
 ## Support
 

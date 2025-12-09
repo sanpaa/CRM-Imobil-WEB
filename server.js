@@ -146,7 +146,9 @@ app.post('/api/upload', upload.array('images', 10), async (req, res) => {
         if (!storageAvailable) {
             console.error('Supabase Storage is not available. Check bucket configuration.');
             return res.status(503).json({ 
-                error: 'Serviço de armazenamento não disponível. Verifique se o bucket "property-images" existe no Supabase Storage.' 
+                error: 'Serviço de armazenamento não disponível. Verifique se o bucket "property-images" existe no Supabase Storage.',
+                details: 'Configure as variáveis SUPABASE_URL e SUPABASE_KEY e crie o bucket "property-images" no Supabase Storage.',
+                documentation: 'Veja DATABASE_SETUP.md (local) ou DEPLOY_RENDER.md (Render) para instruções completas.'
             });
         }
         
@@ -392,10 +394,21 @@ async function startServer() {
             );
             if (hasSupabase) {
                 console.log('Database: ✅ Supabase connected');
+                console.log('Storage: ✅ Images can be uploaded');
             } else {
                 console.log('Database: ⚠️  OFFLINE MODE (read-only)');
-                console.log('           Configure .env to enable full functionality');
-                console.log('           See DATABASE_SETUP.md for instructions');
+                console.log('');
+                console.log('⚠️  WARNING: The following features are DISABLED:');
+                console.log('   - Creating new properties (will return 503 error)');
+                console.log('   - Updating properties (will return 503 error)');
+                console.log('   - Deleting properties (will return 503 error)');
+                console.log('   - Uploading images (will return 503 error)');
+                console.log('');
+                console.log('📖 To enable full functionality:');
+                console.log('   1. Local: See DATABASE_SETUP.md for instructions');
+                console.log('   2. Render: See DEPLOY_RENDER.md for deployment guide');
+                console.log('   3. Configure SUPABASE_URL and SUPABASE_KEY environment variables');
+                console.log('   4. Create "property-images" bucket in Supabase Storage');
             }
             
             console.log('='.repeat(50));
