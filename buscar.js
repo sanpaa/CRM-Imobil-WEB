@@ -101,6 +101,11 @@ function applyFilters() {
     
     // Sort properties
     sortProperties();
+    
+    // If user is viewing the map, refresh markers to reflect new results
+    if (currentView === 'map' && map) {
+        updateMapMarkers();
+    }
 }
 
 // Clear all filters
