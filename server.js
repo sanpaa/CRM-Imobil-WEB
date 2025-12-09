@@ -15,6 +15,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 const rateLimit = require('express-rate-limit');
 const axios = require('axios');
 const multer = require('multer');
@@ -29,6 +30,20 @@ const { SupabaseStorageService } = require('./src/infrastructure/storage');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Trust proxy - required when behind a reverse proxy (Render, Vercel, etc.)
+app.set('trust proxy', 1);
+
+// Check if Angular build exists at startup (for performance)
+const angularIndexPath = path.join(__dirname, 'frontend/dist/frontend/browser/index.html');
+const angularBuildExists = fs.existsSync(angularIndexPath);
+
+if (!angularBuildExists) {
+    console.warn('');
+    console.warn('⚠️  Angular app not built - frontend routes will show build instructions');
+    console.warn('⚠️  Run: npm run build:prod');
+    console.warn('');
+}
 
 // Configure multer for memory storage (files will be uploaded to Supabase Storage)
 const storage = multer.memoryStorage();
@@ -356,7 +371,26 @@ app.post('/api/geocode', async (req, res) => {
 
 // Serve Angular app for all other routes (SPA routing)
 app.use((req, res) => {
-    res.sendFile(path.join(__dirname, 'frontend/dist/frontend/browser/index.html'));
+    if (angularBuildExists) {
+        res.sendFile(angularIndexPath);
+    } else {
+        // Angular app not built - provide helpful error message
+        res.status(503).send(`
+            <html>
+                <head><title>Build Required</title></head>
+                <body style="font-family: Arial, sans-serif; padding: 50px; background: #f5f5f5;">
+                    <h1 style="color: #d32f2f;">⚠️ Angular App Not Built</h1>
+                    <p>The Angular frontend has not been built yet.</p>
+                    <h2>For Development:</h2>
+                    <pre style="background: #fff; padding: 15px; border-radius: 5px;">npm run build:prod</pre>
+                    <h2>For Production (Render):</h2>
+                    <p>Update your Render build command to:</p>
+                    <pre style="background: #fff; padding: 15px; border-radius: 5px;">npm install && cd frontend && npm install && npm run build:prod && cd ..</pre>
+                    <p><a href="/admin-legacy" style="color: #004AAD;">Access Legacy Admin Panel (works without build)</a></p>
+                </body>
+            </html>
+        `);
+    }
 });
 
 // Start server

@@ -75,6 +75,8 @@ Na página de configuração, preencha:
 npm install && cd frontend && npm install && npm run build:prod && cd ..
 ```
 
+**⚠️ CRITICAL**: This exact build command is REQUIRED. If you only use `npm install`, the Angular app will NOT be built and you'll get errors.
+
 **Start Command**:
 ```bash
 node server.js
@@ -159,21 +161,50 @@ Na seção **"Environment Variables"**, clique em **"Add Environment Variable"**
 
 **Causa**: Variáveis de ambiente `SUPABASE_URL` ou `SUPABASE_KEY` não estão configuradas ou estão incorretas.
 
+**Sintoma nos logs**: `[dotenv@17.2.3] injecting env (0) from .env` - significa que 0 variáveis foram carregadas.
+
 **Solução**:
 1. No Render Dashboard, vá em seu serviço
 2. Clique em **"Environment"** no menu lateral
 3. Verifique se `SUPABASE_URL` e `SUPABASE_KEY` existem
 4. Verifique se os valores estão corretos (sem espaços extras)
-5. Caso tenha alterado, clique em **"Save Changes"**
-6. O Render reiniciará automaticamente o serviço
+5. **IMPORTANTE**: No Render, as variáveis de ambiente são configuradas no Dashboard, NÃO através do arquivo `.env`
+6. Caso tenha alterado, clique em **"Save Changes"**
+7. O Render reiniciará automaticamente o serviço
+
+**⚠️ Nota**: O arquivo `.env` é apenas para desenvolvimento local. No Render, você DEVE configurar as variáveis no Dashboard.
 
 ### Build falha
 
+**Causa**: Build command incorreto ou não configurado.
+
 **Solução**:
 1. Verifique os logs do build no Render
-2. Certifique-se que `package.json` e `frontend/package.json` existem
-3. Verifique se o comando de build está correto
-4. Tente fazer build local: `npm install && cd frontend && npm install && npm run build:prod`
+2. **IMPORTANTE**: O build command deve ser EXATAMENTE:
+   ```bash
+   npm install && cd frontend && npm install && npm run build:prod && cd ..
+   ```
+3. Se você configurou apenas `npm install`, o Angular NÃO será buildado
+4. Para corrigir:
+   - Vá em **Settings** → **Build & Deploy**
+   - Atualize o **Build Command**
+   - Clique em **Save Changes**
+   - Faça um novo deploy: **Manual Deploy → Deploy latest commit**
+5. Tente fazer build local para testar: `npm install && cd frontend && npm install && npm run build:prod`
+
+### "Angular App Not Built" na página inicial
+
+**Causa**: Build command não inclui o build do frontend Angular.
+
+**Solução**: Siga os passos em "Build falha" acima para corrigir o build command.
+
+### ValidationError: 'trust proxy' setting is false
+
+**Causa**: Este erro aparece quando o Express não está configurado para confiar em proxies reversos (Render usa proxy).
+
+**Solução**: Este erro foi corrigido na versão mais recente. Se você ainda vê este erro:
+1. Certifique-se que está usando a versão mais recente do código
+2. O servidor agora inclui `app.set('trust proxy', 1)` automaticamente
 
 ### Aplicação não inicia
 
