@@ -4,6 +4,10 @@
  */
 const axios = require('axios');
 
+// Configuration constants
+const GEOCODING_TIMEOUT_MS = 5000; // 5 second timeout for geocoding API calls
+const MIN_ADDRESS_PARTS = 2; // Minimum address components needed (typically city and state)
+
 /**
  * Geocode an address to get latitude and longitude coordinates
  * @param {string} address - The full address to geocode
@@ -24,7 +28,7 @@ async function geocodeAddress(address) {
             headers: {
                 'User-Agent': 'CRMImobil/1.0'
             },
-            timeout: 5000 // 5 second timeout
+            timeout: GEOCODING_TIMEOUT_MS
         });
 
         if (response.data && response.data.length > 0) {
@@ -57,10 +61,10 @@ function buildAddressFromPropertyData(propertyData) {
         propertyData.city,
         propertyData.state,
         'Brasil'
-    ].filter(part => part && typeof part === 'string' && part.trim());
+    ].filter(part => part && typeof part === 'string' && part.trim() !== '');
 
-    // Need at least city and state to geocode
-    if (addressParts.length < 2) {
+    // Need at least city and state to geocode (MIN_ADDRESS_PARTS components)
+    if (addressParts.length < MIN_ADDRESS_PARTS) {
         return null;
     }
 
