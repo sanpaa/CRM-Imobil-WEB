@@ -3,30 +3,16 @@
  * Generates property suggestions based on input
  */
 
-exports.handler = async (event, context) => {
-  // Enable CORS
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Content-Type': 'application/json'
-  };
+const { handleOptions, errorResponse, successResponse } = require('./utils');
 
+exports.handler = async (event, context) => {
   // Handle OPTIONS request for CORS
   if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers,
-      body: ''
-    };
+    return handleOptions();
   }
 
   if (event.httpMethod !== 'POST') {
-    return {
-      statusCode: 405,
-      headers,
-      body: JSON.stringify({ error: 'Method not allowed' })
-    };
+    return errorResponse(405, 'Method not allowed');
   }
 
   try {
@@ -35,11 +21,7 @@ exports.handler = async (event, context) => {
     console.log('✨ AI REQUEST:', { title, description, type, bedrooms, area });
     
     if (!title && !description) {
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ error: 'Digite título ou descrição' })
-      };
+      return errorResponse(400, 'Digite título ou descrição');
     }
     
     // SMART AI: Extract ALL data from text
@@ -146,18 +128,10 @@ exports.handler = async (event, context) => {
     
     console.log('✅ AI GENERATED:', suggestions);
     
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify(suggestions)
-    };
+    return successResponse(suggestions);
     
   } catch (error) {
     console.error('❌ AI ERROR:', error);
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ error: 'Erro ao gerar sugestões' })
-    };
+    return errorResponse(500, 'Erro ao gerar sugestões', error.message);
   }
 };

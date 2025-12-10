@@ -4,44 +4,25 @@
  */
 
 const { geocodeAddress } = require('../../src/utils/geocodingUtils');
+const { handleOptions, errorResponse, successResponse } = require('./utils');
 
 const GEOCODING_RETRY_DELAY_MS = 1000;
 
 exports.handler = async (event, context) => {
-  // Enable CORS
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Content-Type': 'application/json'
-  };
-
   // Handle OPTIONS request for CORS
   if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers,
-      body: ''
-    };
+    return handleOptions();
   }
 
   if (event.httpMethod !== 'POST') {
-    return {
-      statusCode: 405,
-      headers,
-      body: JSON.stringify({ error: 'Method not allowed' })
-    };
+    return errorResponse(405, 'Method not allowed');
   }
 
   try {
     const { address } = JSON.parse(event.body);
     
     if (!address) {
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ error: 'Endereço é obrigatório' })
-      };
+      return errorResponse(400, 'Endereço é obrigatório');
     }
     
     console.log('🗺️ Geocoding request for:', address);
@@ -84,25 +65,13 @@ exports.handler = async (event, context) => {
     
     if (coords) {
       console.log('✅ Geocoding successful:', coords);
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify(coords)
-      };
+      return successResponse(coords);
     } else {
       console.warn('⚠️ Geocoding failed for address:', address);
-      return {
-        statusCode: 404,
-        headers,
-        body: JSON.stringify({ error: 'Endereço não encontrado' })
-      };
+      return errorResponse(404, 'Endereço não encontrado');
     }
   } catch (error) {
     console.error('❌ Geocoding error:', error);
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ error: 'Erro ao geocodificar endereço' })
-    };
+    return errorResponse(500, 'Erro ao geocodificar endereço', error.message);
   }
 };

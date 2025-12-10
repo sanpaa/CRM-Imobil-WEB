@@ -5,27 +5,16 @@
 
 const { SupabasePropertyRepository } = require('../../src/infrastructure/repositories');
 const { PropertyService } = require('../../src/application/services');
+const { handleOptions, errorResponse, successResponse } = require('./utils');
 
 // Initialize services
 const propertyRepository = new SupabasePropertyRepository();
 const propertyService = new PropertyService(propertyRepository);
 
 exports.handler = async (event, context) => {
-  // Enable CORS
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Content-Type': 'application/json'
-  };
-
   // Handle OPTIONS request for CORS
   if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers,
-      body: ''
-    };
+    return handleOptions();
   }
 
   try {
@@ -35,11 +24,7 @@ exports.handler = async (event, context) => {
     // GET /api/properties - Get all properties
     if (method === 'GET' && (!path || path === '/')) {
       const properties = await propertyService.getAllProperties();
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify(properties)
-      };
+      return successResponse(properties);
     }
 
     // GET /api/properties/:id - Get single property
@@ -48,18 +33,10 @@ exports.handler = async (event, context) => {
       const property = await propertyService.getPropertyById(id);
       
       if (!property) {
-        return {
-          statusCode: 404,
-          headers,
-          body: JSON.stringify({ error: 'Property not found' })
-        };
+        return errorResponse(404, 'Property not found');
       }
       
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify(property)
-      };
+      return successResponse(property);
     }
 
     // POST /api/properties - Create new property
@@ -67,11 +44,7 @@ exports.handler = async (event, context) => {
       const propertyData = JSON.parse(event.body);
       const newProperty = await propertyService.createProperty(propertyData);
       
-      return {
-        statusCode: 201,
-        headers,
-        body: JSON.stringify(newProperty)
-      };
+      return successResponse(newProperty, 201);
     }
 
     // PUT /api/properties/:id - Update property
@@ -81,18 +54,10 @@ exports.handler = async (event, context) => {
       const updatedProperty = await propertyService.updateProperty(id, propertyData);
       
       if (!updatedProperty) {
-        return {
-          statusCode: 404,
-          headers,
-          body: JSON.stringify({ error: 'Property not found' })
-        };
+        return errorResponse(404, 'Property not found');
       }
       
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify(updatedProperty)
-      };
+      return successResponse(updatedProperty);
     }
 
     // DELETE /api/properties/:id - Delete property
@@ -100,29 +65,14 @@ exports.handler = async (event, context) => {
       const id = path.replace('/', '');
       await propertyService.deleteProperty(id);
       
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({ message: 'Property deleted successfully' })
-      };
+      return successResponse({ message: 'Property deleted successfully' });
     }
 
     // Method not allowed
-    return {
-      statusCode: 405,
-      headers,
-      body: JSON.stringify({ error: 'Method not allowed' })
-    };
+    return errorResponse(405, 'Method not allowed');
 
   } catch (error) {
     console.error('Error in properties function:', error);
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ 
-        error: 'Internal server error',
-        message: error.message 
-      })
-    };
+    return errorResponse(500, 'Internal server error', error.message);
   }
 };
