@@ -33,6 +33,18 @@ const supabase = createClient(
     process.env.SUPABASE_KEY
 );
 
+/**
+ * Helper function to generate Supabase dashboard URL
+ * @param {string} path - The path after the project ID
+ * @returns {string} - Full dashboard URL
+ */
+function getDashboardUrl(path = '') {
+    const baseUrl = process.env.SUPABASE_URL || '';
+    // Extract project ID from URL (e.g., https://abcd1234.supabase.co -> abcd1234)
+    const projectId = baseUrl.replace('https://', '').split('.')[0];
+    return `https://supabase.com/dashboard/project/${projectId}${path}`;
+}
+
 async function checkAndCreateBucket() {
     try {
         console.log('🔍 Checking for existing buckets...');
@@ -78,7 +90,7 @@ async function checkAndCreateBucket() {
                 console.log('Image uploads may fail because the bucket is not public.');
                 console.log('');
                 console.log('To fix this:');
-                console.log('1. Go to: ' + process.env.SUPABASE_URL.replace('https://', 'https://supabase.com/dashboard/project/') + '/storage/buckets');
+                console.log('1. Go to: ' + getDashboardUrl('/storage/buckets'));
                 console.log('2. Click on "property-images" bucket');
                 console.log('3. Click "Edit bucket" or settings');
                 console.log('4. Enable "Public bucket"');
@@ -97,7 +109,7 @@ async function checkAndCreateBucket() {
             console.log('METHOD 1: Using Supabase Dashboard (Recommended)');
             console.log('─'.repeat(70));
             console.log('');
-            console.log('1. Go to: ' + process.env.SUPABASE_URL.replace('https://', 'https://supabase.com/dashboard/project/') + '/storage/buckets');
+            console.log('1. Go to: ' + getDashboardUrl('/storage/buckets'));
             console.log('2. Click "New bucket" or "+ New bucket"');
             console.log('3. Bucket name: property-images');
             console.log('4. ✅ Check "Public bucket" (IMPORTANT!)');
@@ -107,7 +119,7 @@ async function checkAndCreateBucket() {
             console.log('METHOD 2: Using SQL (Advanced)');
             console.log('─'.repeat(70));
             console.log('');
-            console.log('1. Go to: ' + process.env.SUPABASE_URL.replace('https://', 'https://supabase.com/dashboard/project/') + '/sql/new');
+            console.log('1. Go to: ' + getDashboardUrl('/sql/new'));
             console.log('2. Run this SQL:');
             console.log('');
             console.log(`INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)

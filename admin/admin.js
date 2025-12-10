@@ -568,16 +568,23 @@ async function handleFormSubmit(e) {
                 
                 console.error('Upload failed:', uploadResponse.status, errorMessage);
                 
-                // Build footer with help information
+                // Helper function to escape HTML to prevent XSS
+                const escapeHtml = (text) => {
+                    const div = document.createElement('div');
+                    div.textContent = text;
+                    return div.innerHTML;
+                };
+                
+                // Build footer with help information (with XSS protection)
                 let footerHtml = '';
                 if (documentation) {
                     footerHtml = `<div style="text-align: left; margin-top: 10px;">
-                        <small><strong>💡 Solução:</strong><br>${documentation}</small>`;
+                        <small><strong>💡 Solução:</strong><br>${escapeHtml(documentation)}</small>`;
                     
                     if (helpCommands.length > 0) {
                         footerHtml += `<br><br><small><strong>Comandos úteis:</strong><br>`;
                         helpCommands.forEach(cmd => {
-                            footerHtml += `<code style="background: #f0f0f0; padding: 2px 5px; border-radius: 3px;">${cmd}</code><br>`;
+                            footerHtml += `<code style="background: #f0f0f0; padding: 2px 5px; border-radius: 3px;">${escapeHtml(cmd)}</code><br>`;
                         });
                         footerHtml += `</small>`;
                     }

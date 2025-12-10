@@ -171,7 +171,7 @@ app.post('/api/upload', upload.array('images', 10), async (req, res) => {
         
         // Upload files to Supabase Storage
         const uploadResult = await storageService.uploadFiles(req.files);
-        const { urls, errors } = uploadResult;
+        const { urls, errors, errorCodes } = uploadResult;
         
         if (urls.length === 0) {
             // All uploads failed - return detailed error message
@@ -179,8 +179,9 @@ app.post('/api/upload', upload.array('images', 10), async (req, res) => {
             const bucketName = storageService.getBucketName();
             console.error('All image uploads failed:', errorDetails);
             
-            // Check if error is about bucket not found
-            const isBucketError = errorDetails.toLowerCase().includes('bucket') || 
+            // Check if error is about bucket not found using error codes or message
+            const isBucketError = errorCodes.some(code => code === '404' || code === 'BUCKET_NOT_FOUND') ||
+                                  errorDetails.toLowerCase().includes('bucket') || 
                                   errorDetails.toLowerCase().includes('not found');
             
             return res.status(500).json({ 
