@@ -1,5 +1,7 @@
 // Search page functionality
-const API_BASE = 'https://crm-imobil.onrender.com';
+const API_BASE = window.location.origin.includes('localhost') 
+    ? window.location.origin 
+    : 'https://crm-imobil.onrender.com';
 let allProperties = [];
 let filteredProperties = [];
 let currentPage = 1;

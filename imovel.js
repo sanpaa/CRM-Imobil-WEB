@@ -327,6 +327,7 @@ function loadAmenities(property) {
 }
 
 function loadGallery(property) {
+    const gallerySection = document.getElementById('propertyGallery');
     const mainImage = document.getElementById('mainImage');
     const thumbnails = document.getElementById('thumbnails');
     
@@ -341,19 +342,27 @@ function loadGallery(property) {
         propertyImages = ['https://images.unsplash.com/photo-1568605114967-8130f3a36994'];
     }
     
-    // Set main image
-    mainImage.src = propertyImages[0];
-    mainImage.alt = property.title;
-    
-    // Create thumbnails
-    thumbnails.innerHTML = propertyImages.map((img, index) => `
-        <img src="${img}" alt="${property.title} - Imagem ${index + 1}" 
-             class="gallery-thumbnail ${index === 0 ? 'active' : ''}"
-             onclick="selectImage(${index})"
-             onerror="this.src='https://images.unsplash.com/photo-1568605114967-8130f3a36994'">
-    `).join('');
-    
-    currentImageIndex = 0;
+    // Show gallery section if there are multiple images
+    if (propertyImages.length > 1) {
+        gallerySection.style.display = 'block';
+        
+        // Set main image
+        mainImage.src = propertyImages[0];
+        mainImage.alt = property.title;
+        
+        // Create thumbnails
+        thumbnails.innerHTML = propertyImages.map((img, index) => `
+            <img src="${img}" alt="${property.title} - Imagem ${index + 1}" 
+                 class="gallery-thumbnail ${index === 0 ? 'active' : ''}"
+                 onclick="selectImage(${index})"
+                 onerror="this.src='https://images.unsplash.com/photo-1568605114967-8130f3a36994'">
+        `).join('');
+        
+        currentImageIndex = 0;
+    } else {
+        // Only one image, hide the gallery (hero already shows it)
+        gallerySection.style.display = 'none';
+    }
 }
 
 function selectImage(index) {
@@ -382,24 +391,17 @@ function loadMap(property) {
     const mapSection = document.getElementById('propertyMapSection');
     const mapFrame = document.getElementById('propertyMapFrame');
     
-    if (!mapSection || !mapFrame) return;
-    
-    // Always show map section
-    mapSection.style.display = 'block';
-    
     if (property.latitude && property.longitude) {
-        // Load map with property coordinates
-        mapFrame.src = `https://maps.google.com/maps?q=${property.latitude},${property.longitude}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
-    } else if (property.city && property.state) {
-        // Fallback: search by city and state
-        const location = `${property.neighborhood || ''} ${property.city}, ${property.state}`.trim();
-        mapFrame.src = `https://maps.google.com/maps?q=${encodeURIComponent(location)}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
-    } else if (property.address) {
-        // Fallback: search by address
-        mapFrame.src = `https://maps.google.com/maps?q=${encodeURIComponent(property.address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+        // Property has coordinates - show map
+        if (mapSection && mapFrame) {
+            mapSection.style.display = 'block';
+            mapFrame.src = `https://maps.google.com/maps?q=${property.latitude},${property.longitude}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+        }
     } else {
-        // No location data available - hide map section
-        mapSection.style.display = 'none';
+        // No coordinates - hide map section
+        if (mapSection) {
+            mapSection.style.display = 'none';
+        }
     }
 }
 

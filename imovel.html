@@ -536,7 +536,6 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             margin-bottom: 40px;
             position: relative;
-            display: none; /* Hidden since we have hero image */
         }
 
         .gallery-main-image {
@@ -1012,8 +1011,11 @@
             <div class="property-badges" id="propertyBadgesOld"></div>
         </div>
 
-        <!-- Image Gallery (Hidden - replaced by hero) -->
-        <div class="property-gallery" id="propertyGallery">
+        <!-- Image Gallery -->
+        <div class="property-gallery" id="propertyGallery" style="display: none;">
+            <div style="padding: 30px 30px 0;">
+                <h3 style="font-size: 1.8rem; color: #1a1a2e; margin-bottom: 20px;">Galeria de Fotos</h3>
+            </div>
             <img src="" alt="Imóvel" class="gallery-main-image" id="mainImage">
             <div class="gallery-nav">
                 <button onclick="previousImage()"><i class="fas fa-chevron-left"></i></button>
@@ -1090,24 +1092,9 @@
         </div>
 
         <!-- Map -->
-        <div class="property-map" id="propertyMapSection" style="display: none;">
-            <h3><i class="fas fa-map-marker-alt"></i> Localização</h3>
-            <iframe id="propertyMapFrame" src="" allowfullscreen loading="lazy"></iframe>
-        </div>
-    </div>
-
-    <!-- Image Gallery Modal -->
-    <div class="image-gallery-modal" id="galleryModal">
-        <button class="modal-close" onclick="closeGallery()">
-            <i class="fas fa-times"></i>
-        </button>
-        <div class="modal-content">
-            <img src="" alt="Imóvel" class="modal-image" id="modalImage">
-            <div class="modal-nav">
-                <button onclick="previousGalleryImage()"><i class="fas fa-chevron-left"></i></button>
-                <button onclick="nextGalleryImage()"><i class="fas fa-chevron-right"></i></button>
-            </div>
-            <div class="modal-counter" id="modalCounter">1 / 1</div>
+        <div class="property-map" id="propertyMapSection">
+            <h3>Localização</h3>
+            <iframe id="propertyMapFrame" src="" allowfullscreen></iframe>
         </div>
     </div>
 
