@@ -59,8 +59,9 @@ async function geocodeWithNominatim(address) {
 async function geocodeWithGoogle(address) {
     const apiKey = process.env.GOOGLE_MAPS_API_KEY;
     
-    if (!apiKey) {
-        return null; // Skip if no API key configured
+    // Validate API key
+    if (!apiKey || typeof apiKey !== 'string' || apiKey.trim() === '') {
+        return null; // Skip if no valid API key configured
     }
     
     try {
@@ -149,7 +150,7 @@ async function geocodeAddress(address) {
         }
         
         // Small delay between provider attempts
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS / 2));
     }
     
     console.warn('⚠️ All geocoding providers failed for address:', address);
@@ -265,6 +266,16 @@ async function geocodeWithFallback(propertyData) {
 }
 
 /**
+ * Validate that coordinates are within valid geographic bounds
+ * @param {number} lat - Latitude value
+ * @param {number} lng - Longitude value
+ * @returns {boolean} - True if coordinates are within valid bounds
+ */
+function isValidCoordinateRange(lat, lng) {
+    return lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+}
+
+/**
  * Automatically geocode property data if it doesn't have valid coordinates
  * @param {Object} propertyData - Property data to geocode
  * @returns {Promise<Object>} - Property data with coordinates (if geocoding succeeded)
@@ -282,6 +293,12 @@ async function autoGeocodePropertyData(propertyData) {
     const coords = await geocodeWithFallback(propertyData);
     
     if (coords) {
+        // Validate coordinate bounds
+        if (!isValidCoordinateRange(coords.lat, coords.lng)) {
+            console.warn('⚠️ Geocoding returned invalid coordinates (out of bounds):', coords);
+            return propertyData;
+        }
+        
         console.log('✅ Auto-geocoding successful:', coords);
         return {
             ...propertyData,
@@ -302,5 +319,6 @@ module.exports = {
     geocodeWithFallback,
     buildAddressFromPropertyData,
     hasValidCoordinates,
+    isValidCoordinateRange,
     autoGeocodePropertyData
 };
