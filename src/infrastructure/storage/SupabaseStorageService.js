@@ -12,6 +12,14 @@ class SupabaseStorageService {
     }
 
     /**
+     * Get the bucket name
+     * @returns {string} - The bucket name
+     */
+    getBucketName() {
+        return this.bucketName;
+    }
+
+    /**
      * Get extension from mime type
      * @param {string} mimeType - The MIME type
      * @returns {string} - File extension
@@ -51,8 +59,8 @@ class SupabaseStorageService {
                 });
 
             if (error) {
-                const errorMsg = `Upload failed for ${fileName}: ${error.message || JSON.stringify(error)}`;
-                console.error('Supabase Storage upload error:', errorMsg);
+                const errorMsg = `Upload failed for ${fileName}: ${error.message || 'Unknown error'}`;
+                console.error('Supabase Storage upload error:', error);
                 return { url: null, error: errorMsg };
             }
 

@@ -513,6 +513,15 @@ function closeModal() {
     editingId = null;
 }
 
+// Parse coordinate value (handles empty strings, whitespace, and NaN)
+function parseCoordinate(value) {
+    if (!value || value.trim() === '') {
+        return null;
+    }
+    const parsed = parseFloat(value);
+    return !isNaN(parsed) ? parsed : null;
+}
+
 // Handle form submit
 async function handleFormSubmit(e) {
     e.preventDefault();
@@ -615,11 +624,8 @@ async function handleFormSubmit(e) {
     // Parse latitude and longitude (convert empty strings to null)
     const latValue = document.getElementById('latitude').value;
     const lngValue = document.getElementById('longitude').value;
-    const parsedLat = latValue && latValue.trim() !== '' ? parseFloat(latValue) : null;
-    const parsedLng = lngValue && lngValue.trim() !== '' ? parseFloat(lngValue) : null;
-    // Handle NaN values (from invalid input or failed geocoding)
-    const latitude = parsedLat !== null && !isNaN(parsedLat) ? parsedLat : null;
-    const longitude = parsedLng !== null && !isNaN(parsedLng) ? parsedLng : null;
+    const latitude = parseCoordinate(latValue);
+    const longitude = parseCoordinate(lngValue);
     
     console.log('📍 Coordinates to save:', { latitude, longitude, latValue, lngValue });
 
