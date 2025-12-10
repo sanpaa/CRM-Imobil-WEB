@@ -247,6 +247,9 @@ function displayProperty(property) {
     // Load Amenities
     loadAmenities(property);
 
+    // Load Map (always try to load)
+    loadMap(property);
+
     // WhatsApp Button
     const whatsappMessage = `Olá! Tenho interesse no imóvel: ${property.title}`;
     const whatsappNumber = (property.contact || '5511999999999').replace(/\D/g, '');
@@ -257,9 +260,11 @@ function displayProperty(property) {
     if (property.latitude && property.longitude) {
         mapsBtn.href = `https://www.google.com/maps?q=${property.latitude},${property.longitude}`;
         mapsBtn.style.display = 'inline-flex';
-        
-        // Show map section
-        loadMap(property);
+    } else if (property.city && property.state) {
+        // Fallback to city search
+        const location = `${property.neighborhood || ''} ${property.city}, ${property.state}`.trim();
+        mapsBtn.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
+        mapsBtn.style.display = 'inline-flex';
     } else {
         mapsBtn.style.display = 'none';
     }
@@ -374,14 +379,27 @@ function nextImage() {
 }
 
 function loadMap(property) {
-    if (!property.latitude || !property.longitude) return;
-
     const mapSection = document.getElementById('propertyMapSection');
     const mapFrame = document.getElementById('propertyMapFrame');
     
-    if (mapSection && mapFrame) {
-        mapSection.style.display = 'block';
+    if (!mapSection || !mapFrame) return;
+    
+    // Always show map section
+    mapSection.style.display = 'block';
+    
+    if (property.latitude && property.longitude) {
+        // Load map with property coordinates
         mapFrame.src = `https://maps.google.com/maps?q=${property.latitude},${property.longitude}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+    } else if (property.city && property.state) {
+        // Fallback: search by city and state
+        const location = `${property.neighborhood || ''} ${property.city}, ${property.state}`.trim();
+        mapFrame.src = `https://maps.google.com/maps?q=${encodeURIComponent(location)}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
+    } else if (property.address) {
+        // Fallback: search by address
+        mapFrame.src = `https://maps.google.com/maps?q=${encodeURIComponent(property.address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+    } else {
+        // No location data available - hide map section
+        mapSection.style.display = 'none';
     }
 }
 
