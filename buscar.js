@@ -84,7 +84,7 @@ function applyFilters() {
         }
         
         // Type filter (case-insensitive comparison)
-        if (filterType && property.type && property.type.toLowerCase() !== filterType.toLowerCase()) return false;
+        if (filterType && property.type && filterType.toLowerCase() !== property.type.toLowerCase()) return false;
         
         // City filter
         if (filterCity && property.city !== filterCity) return false;
