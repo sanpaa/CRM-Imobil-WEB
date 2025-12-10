@@ -5,45 +5,26 @@
 
 const { SupabaseStorageService } = require('../../src/infrastructure/storage');
 const multipart = require('parse-multipart-data');
+const { getContentType, handleOptions, errorResponse, successResponse } = require('./utils');
 
 // Initialize storage service
 const storageService = new SupabaseStorageService();
 
 exports.handler = async (event, context) => {
-  // Enable CORS
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Content-Type': 'application/json'
-  };
-
   // Handle OPTIONS request for CORS
   if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers,
-      body: ''
-    };
+    return handleOptions();
   }
 
   if (event.httpMethod !== 'POST') {
-    return {
-      statusCode: 405,
-      headers,
-      body: JSON.stringify({ error: 'Method not allowed' })
-    };
+    return errorResponse(405, 'Method not allowed');
   }
 
   try {
     // Parse multipart form data
-    const contentType = event.headers['content-type'] || event.headers['Content-Type'];
+    const contentType = getContentType(event);
     if (!contentType || !contentType.includes('multipart/form-data')) {
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ error: 'Content-Type must be multipart/form-data' })
-      };
+      return errorResponse(400, 'Content-Type must be multipart/form-data');
     }
 
     const boundary = multipart.getBoundary(contentType);
@@ -51,11 +32,7 @@ exports.handler = async (event, context) => {
     const parts = multipart.parse(bodyBuffer, boundary);
 
     if (!parts || parts.length === 0) {
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ error: 'Nenhuma imagem foi enviada' })
-      };
+      return errorResponse(400, 'Nenhuma imagem foi enviada');
     }
 
     // Filter only image files
@@ -65,11 +42,7 @@ exports.handler = async (event, context) => {
     });
 
     if (imageFiles.length === 0) {
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ error: 'Nenhuma imagem foi enviada' })
-      };
+      return errorResponse(400, 'Nenhuma imagem foi enviada');
     }
 
     // Limit to 10 images
@@ -80,19 +53,14 @@ exports.handler = async (event, context) => {
     if (!storageAvailable) {
       const bucketName = storageService.getBucketName();
       console.error('Supabase Storage is not available. Check bucket configuration.');
-      return {
-        statusCode: 503,
-        headers,
-        body: JSON.stringify({ 
-          error: `❌ Bucket "${bucketName}" não encontrado no Supabase Storage`,
-          details: `O bucket de armazenamento não existe ou não está acessível. Execute "npm run storage:setup" para criar o bucket.`,
-          documentation: 'Veja STORAGE_SETUP.md para instruções detalhadas de como criar o bucket.',
-          helpCommands: [
-            'npm run storage:setup - Verificar e criar bucket',
-            'npm run verify - Verificar configuração completa'
-          ]
-        })
-      };
+      return errorResponse(503, `❌ Bucket "${bucketName}" não encontrado no Supabase Storage`, {
+        details: `O bucket de armazenamento não existe ou não está acessível. Execute "npm run storage:setup" para criar o bucket.`,
+        documentation: 'Veja STORAGE_SETUP.md para instruções detalhadas de como criar o bucket.',
+        helpCommands: [
+          'npm run storage:setup - Verificar e criar bucket',
+          'npm run verify - Verificar configuração completa'
+        ]
+      });
     }
 
     // Convert parts to multer-like file objects
@@ -106,14 +74,9 @@ exports.handler = async (event, context) => {
     // Validate file sizes (5MB limit)
     const oversizedFiles = files.filter(file => file.size > 5 * 1024 * 1024);
     if (oversizedFiles.length > 0) {
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ 
-          error: 'Algumas imagens excedem o tamanho máximo de 5MB',
-          details: oversizedFiles.map(f => f.originalname).join(', ')
-        })
-      };
+      return errorResponse(400, 'Algumas imagens excedem o tamanho máximo de 5MB', 
+        oversizedFiles.map(f => f.originalname).join(', ')
+      );
     }
 
     // Upload files to Supabase Storage
@@ -131,54 +94,33 @@ exports.handler = async (event, context) => {
                             errorDetails.toLowerCase().includes('bucket') || 
                             errorDetails.toLowerCase().includes('not found');
 
-      return {
-        statusCode: 500,
-        headers,
-        body: JSON.stringify({ 
-          error: isBucketError 
-            ? `❌ Bucket "${bucketName}" não encontrado` 
-            : 'Erro ao fazer upload das imagens',
+      return errorResponse(500, 
+        isBucketError ? `❌ Bucket "${bucketName}" não encontrado` : 'Erro ao fazer upload das imagens',
+        {
           details: errorDetails,
           documentation: isBucketError 
             ? `Execute "npm run storage:setup" para criar o bucket "${bucketName}". Veja STORAGE_SETUP.md para mais detalhes.`
             : `Verifique se o bucket "${bucketName}" existe e está público no Supabase Storage.`,
-          helpCommands: isBucketError 
-            ? ['npm run storage:setup', 'npm run verify']
-            : undefined
-        })
-      };
+          helpCommands: isBucketError ? ['npm run storage:setup', 'npm run verify'] : undefined
+        }
+      );
     }
 
     // Some or all uploads succeeded
     if (errors.length > 0) {
       console.warn(`${errors.length} of ${files.length} image uploads failed:`, errors.join('; '));
       // Return success with warning about partial failures
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({ 
-          imageUrls: urls,
-          warning: `${urls.length} de ${files.length} imagens foram enviadas com sucesso. ${errors.length} falharam.`
-        })
-      };
+      return successResponse({ 
+        imageUrls: urls,
+        warning: `${urls.length} de ${files.length} imagens foram enviadas com sucesso. ${errors.length} falharam.`
+      });
     }
 
     // All uploads succeeded
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({ imageUrls: urls })
-    };
+    return successResponse({ imageUrls: urls });
 
   } catch (error) {
     console.error('Upload error:', error);
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ 
-        error: 'Erro ao fazer upload das imagens',
-        details: error.message
-      })
-    };
+    return errorResponse(500, 'Erro ao fazer upload das imagens', error.message);
   }
 };

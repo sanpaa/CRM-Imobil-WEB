@@ -5,47 +5,21 @@
 
 const { SupabaseUserRepository } = require('../../src/infrastructure/repositories');
 const { UserService } = require('../../src/application/services');
+const { verifyAuth, handleOptions, errorResponse, successResponse } = require('./utils');
 
 // Initialize services
 const userRepository = new SupabaseUserRepository();
 const userService = new UserService(userRepository);
 
-/**
- * Simple auth middleware for serverless
- */
-function verifyAuth(event) {
-  const token = event.headers.authorization?.replace('Bearer ', '');
-  if (!token || !userService.verifyToken(token)) {
-    return false;
-  }
-  return true;
-}
-
 exports.handler = async (event, context) => {
-  // Enable CORS
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Content-Type': 'application/json'
-  };
-
   // Handle OPTIONS request for CORS
   if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers,
-      body: ''
-    };
+    return handleOptions();
   }
 
   // All user endpoints require authentication
   if (!verifyAuth(event)) {
-    return {
-      statusCode: 401,
-      headers,
-      body: JSON.stringify({ error: 'Unauthorized' })
-    };
+    return errorResponse(401, 'Unauthorized');
   }
 
   try {
@@ -55,11 +29,7 @@ exports.handler = async (event, context) => {
     // GET /api/users - Get all users
     if (method === 'GET' && (!path || path === '/')) {
       const users = await userService.getAllUsers();
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify(users)
-      };
+      return successResponse(users);
     }
 
     // GET /api/users/:id - Get single user
@@ -67,18 +37,10 @@ exports.handler = async (event, context) => {
       const id = path.replace('/', '');
       try {
         const user = await userService.getUserById(id);
-        return {
-          statusCode: 200,
-          headers,
-          body: JSON.stringify(user)
-        };
+        return successResponse(user);
       } catch (error) {
         if (error.message === 'User not found') {
-          return {
-            statusCode: 404,
-            headers,
-            body: JSON.stringify({ error: 'User not found' })
-          };
+          return errorResponse(404, 'User not found');
         }
         throw error;
       }
@@ -89,20 +51,12 @@ exports.handler = async (event, context) => {
       const userData = JSON.parse(event.body);
       try {
         const user = await userService.createUser(userData);
-        return {
-          statusCode: 201,
-          headers,
-          body: JSON.stringify(user)
-        };
+        return successResponse(user, 201);
       } catch (error) {
         if (error.message.startsWith('Validation failed') ||
             error.message === 'Username already exists' ||
             error.message === 'Email already exists') {
-          return {
-            statusCode: 400,
-            headers,
-            body: JSON.stringify({ error: error.message })
-          };
+          return errorResponse(400, error.message);
         }
         throw error;
       }
@@ -114,26 +68,14 @@ exports.handler = async (event, context) => {
       const userData = JSON.parse(event.body);
       try {
         const user = await userService.updateUser(id, userData);
-        return {
-          statusCode: 200,
-          headers,
-          body: JSON.stringify(user)
-        };
+        return successResponse(user);
       } catch (error) {
         if (error.message === 'User not found') {
-          return {
-            statusCode: 404,
-            headers,
-            body: JSON.stringify({ error: 'User not found' })
-          };
+          return errorResponse(404, 'User not found');
         }
         if (error.message === 'Username already exists' ||
             error.message === 'Email already exists') {
-          return {
-            statusCode: 400,
-            headers,
-            body: JSON.stringify({ error: error.message })
-          };
+          return errorResponse(400, error.message);
         }
         throw error;
       }
@@ -144,39 +86,20 @@ exports.handler = async (event, context) => {
       const id = path.replace('/', '');
       try {
         await userService.deleteUser(id);
-        return {
-          statusCode: 200,
-          headers,
-          body: JSON.stringify({ message: 'User deleted successfully' })
-        };
+        return successResponse({ message: 'User deleted successfully' });
       } catch (error) {
         if (error.message === 'User not found') {
-          return {
-            statusCode: 404,
-            headers,
-            body: JSON.stringify({ error: 'User not found' })
-          };
+          return errorResponse(404, 'User not found');
         }
         throw error;
       }
     }
 
     // Route not found
-    return {
-      statusCode: 404,
-      headers,
-      body: JSON.stringify({ error: 'Route not found' })
-    };
+    return errorResponse(404, 'Route not found');
 
   } catch (error) {
     console.error('Users error:', error);
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ 
-        error: 'Internal server error',
-        message: error.message 
-      })
-    };
+    return errorResponse(500, 'Internal server error', error.message);
   }
 };
