@@ -1,16 +1,13 @@
 [build]
-  # The base directory for the build
-  base = "frontend"
-  
-  # The command to build the Angular app
-  command = "npm install && npm run build:prod"
+  # The command to build the Angular app and install backend dependencies
+  command = "npm install && cd frontend && npm install && npm run build:prod"
   
   # The directory where the built files are located
-  publish = "dist/frontend/browser"
+  publish = "frontend/dist/frontend/browser"
 
 [functions]
-  # Directory for serverless functions (relative to repo root, not base)
-  directory = "../netlify/functions"
+  # Directory for serverless functions
+  directory = "netlify/functions"
   # Include node_modules for functions
   node_bundler = "esbuild"
   # External modules that should not be bundled
