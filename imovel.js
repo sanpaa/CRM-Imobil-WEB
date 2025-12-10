@@ -244,6 +244,9 @@ function displayProperty(property) {
     // Description
     document.getElementById('propertyDescription').textContent = property.description || 'Descrição não disponível.';
 
+    // Load Amenities
+    loadAmenities(property);
+
     // WhatsApp Button
     const whatsappMessage = `Olá! Tenho interesse no imóvel: ${property.title}`;
     const whatsappNumber = (property.contact || '5511999999999').replace(/\D/g, '');
@@ -259,6 +262,62 @@ function displayProperty(property) {
         loadMap(property);
     } else {
         mapsBtn.style.display = 'none';
+    }
+}
+
+function loadAmenities(property) {
+    // Common property amenities based on property type and features
+    const amenitiesMap = {
+        // Basic amenities everyone should have
+        basic: [
+            { icon: 'fa-water', label: 'Água' },
+            { icon: 'fa-lightbulb', label: 'Energia Elétrica' },
+        ],
+        // Common house/apartment amenities
+        residential: [
+            { icon: 'fa-shield-alt', label: 'Segurança 24h', condition: (p) => p.type?.toLowerCase().includes('condomínio') },
+            { icon: 'fa-swimming-pool', label: 'Piscina', condition: (p) => p.type?.toLowerCase().includes('condomínio') },
+            { icon: 'fa-dumbbell', label: 'Academia', condition: (p) => p.type?.toLowerCase().includes('condomínio') },
+            { icon: 'fa-tree', label: 'Área Verde', condition: (p) => p.type?.toLowerCase().includes('condomínio') },
+            { icon: 'fa-child', label: 'Playground', condition: (p) => p.type?.toLowerCase().includes('condomínio') },
+            { icon: 'fa-snowflake', label: 'Ar Condicionado' },
+            { icon: 'fa-wind', label: 'Ventiladores' },
+            { icon: 'fa-solar-panel', label: 'Aquecedor Solar' },
+            { icon: 'fa-warehouse', label: 'Churrasqueira' },
+            { icon: 'fa-utensils', label: 'Cozinha Planejada' },
+            { icon: 'fa-couch', label: 'Sala de Estar' },
+            { icon: 'fa-shower', label: 'Box no Banheiro' },
+            { icon: 'fa-door-open', label: 'Closet' },
+            { icon: 'fa-store', label: 'Próximo ao Comércio' },
+        ]
+    };
+
+    // Build amenities list
+    const amenitiesList = [];
+    
+    // Always add basic amenities
+    amenitiesList.push(...amenitiesMap.basic);
+    
+    // Add conditional amenities
+    amenitiesMap.residential.forEach(amenity => {
+        if (!amenity.condition || amenity.condition(property)) {
+            amenitiesList.push({ icon: amenity.icon, label: amenity.label });
+        }
+    });
+
+    // Only show amenities section if we have amenities
+    if (amenitiesList.length > 0) {
+        const amenitiesSection = document.getElementById('propertyAmenities');
+        const amenitiesGrid = document.getElementById('amenitiesGrid');
+        
+        amenitiesGrid.innerHTML = amenitiesList.map(amenity => `
+            <div class="amenity-item">
+                <i class="fas ${amenity.icon}"></i>
+                <span>${amenity.label}</span>
+            </div>
+        `).join('');
+        
+        amenitiesSection.style.display = 'block';
     }
 }
 
