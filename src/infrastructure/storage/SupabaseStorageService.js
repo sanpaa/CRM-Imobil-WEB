@@ -12,6 +12,14 @@ class SupabaseStorageService {
     }
 
     /**
+     * Get the bucket name
+     * @returns {string} - The bucket name
+     */
+    getBucketName() {
+        return this.bucketName;
+    }
+
+    /**
      * Get extension from mime type
      * @param {string} mimeType - The MIME type
      * @returns {string} - File extension
@@ -32,7 +40,7 @@ class SupabaseStorageService {
      * @param {Buffer} fileBuffer - The file buffer
      * @param {string} fileName - The original filename
      * @param {string} mimeType - The file mime type
-     * @returns {Promise<string|null>} - Public URL of the uploaded file or null on error
+     * @returns {Promise<{url: string|null, error: string|null}>} - Result with URL or error message
      */
     async uploadFile(fileBuffer, fileName, mimeType) {
         try {
@@ -51,8 +59,9 @@ class SupabaseStorageService {
                 });
 
             if (error) {
+                const errorMsg = `Upload failed for ${fileName}: ${error.message || 'Unknown error'}`;
                 console.error('Supabase Storage upload error:', error);
-                return null;
+                return { url: null, error: errorMsg };
             }
 
             // Get public URL
@@ -60,17 +69,18 @@ class SupabaseStorageService {
                 .from(this.bucketName)
                 .getPublicUrl(uniqueFileName);
 
-            return urlData.publicUrl;
+            return { url: urlData.publicUrl, error: null };
         } catch (err) {
-            console.error('Storage upload error:', err.message);
-            return null;
+            const errorMsg = `Storage upload error for ${fileName}: ${err.message}`;
+            console.error(errorMsg);
+            return { url: null, error: errorMsg };
         }
     }
 
     /**
      * Upload multiple files to Supabase Storage
      * @param {Array<{buffer: Buffer, originalname: string, mimetype: string}>} files - Array of file objects
-     * @returns {Promise<string[]>} - Array of public URLs
+     * @returns {Promise<{urls: string[], errors: string[]}>} - Object with successful URLs and error messages
      */
     async uploadFiles(files) {
         const uploadPromises = files.map(file => 
@@ -78,7 +88,11 @@ class SupabaseStorageService {
         );
 
         const results = await Promise.all(uploadPromises);
-        return results.filter(url => url !== null);
+        
+        const urls = results.filter(r => r.url !== null).map(r => r.url);
+        const errors = results.filter(r => r.error !== null).map(r => r.error);
+        
+        return { urls, errors };
     }
 
     /**
