@@ -1,26 +1,21 @@
 /**
  * Geocoding Utilities
- * Converts addresses to latitude/longitude coordinates using Nominatim (OpenStreetMap)
+ * Converts addresses to latitude/longitude coordinates using multiple providers
  */
 const axios = require('axios');
 
 // Configuration constants
-const GEOCODING_TIMEOUT_MS = 5000; // 5 second timeout for geocoding API calls
+const GEOCODING_TIMEOUT_MS = 10000; // 10 second timeout for geocoding API calls
 const MIN_ADDRESS_PARTS = 2; // Minimum address components needed (typically city and state)
+const RETRY_DELAY_MS = 1000; // Delay between retries to respect rate limits
 
 /**
- * Geocode an address to get latitude and longitude coordinates
- * Uses multiple geocoding strategies for better success rate
- * @param {string} address - The full address to geocode
- * @returns {Promise<{lat: number, lng: number}|null>} - Coordinates or null if geocoding fails
+ * Geocode using Nominatim (OpenStreetMap) - Free but rate limited
+ * @param {string} address - The address to geocode
+ * @returns {Promise<{lat: number, lng: number}|null>}
  */
-async function geocodeAddress(address) {
-    if (!address || typeof address !== 'string' || address.trim() === '') {
-        return null;
-    }
-
+async function geocodeWithNominatim(address) {
     try {
-        // Try geocoding with the full address
         const response = await axios.get('https://nominatim.openstreetmap.org/search', {
             params: {
                 q: address,
@@ -29,7 +24,7 @@ async function geocodeAddress(address) {
                 addressdetails: 1
             },
             headers: {
-                'User-Agent': 'CRMImobil/1.0'
+                'User-Agent': 'CRMImobil/1.0 (Real Estate CRM)'
             },
             timeout: GEOCODING_TIMEOUT_MS
         });
@@ -39,19 +34,126 @@ async function geocodeAddress(address) {
             const lat = parseFloat(result.lat);
             const lng = parseFloat(result.lon);
             
-            // Validate that we got valid numbers
             if (!isNaN(lat) && !isNaN(lng)) {
-                console.log('✅ Geocoding successful:', address, '→', { lat, lng });
                 return { lat, lng };
             }
         }
         
-        console.warn('⚠️ No geocoding results for address:', address);
         return null;
     } catch (error) {
-        console.warn('❌ Geocoding failed for address:', address, '- Error:', error.message);
+        // Don't log as error if it's a timeout or network issue - these are common
+        if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT' || error.code === 'ENOTFOUND') {
+            console.warn('⚠️ Nominatim unavailable (network issue):', error.message);
+        } else {
+            console.warn('⚠️ Nominatim geocoding failed:', error.message);
+        }
         return null;
     }
+}
+
+/**
+ * Geocode using Google Maps Geocoding API (requires API key)
+ * @param {string} address - The address to geocode
+ * @returns {Promise<{lat: number, lng: number}|null>}
+ */
+async function geocodeWithGoogle(address) {
+    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+    
+    if (!apiKey) {
+        return null; // Skip if no API key configured
+    }
+    
+    try {
+        const response = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
+            params: {
+                address: address,
+                key: apiKey,
+                region: 'br' // Bias results to Brazil
+            },
+            timeout: GEOCODING_TIMEOUT_MS
+        });
+
+        if (response.data && response.data.status === 'OK' && response.data.results.length > 0) {
+            const location = response.data.results[0].geometry.location;
+            return { lat: location.lat, lng: location.lng };
+        }
+        
+        return null;
+    } catch (error) {
+        console.warn('⚠️ Google Maps geocoding failed:', error.message);
+        return null;
+    }
+}
+
+/**
+ * Geocode using Photon (OpenStreetMap-based, often more reliable than Nominatim)
+ * @param {string} address - The address to geocode
+ * @returns {Promise<{lat: number, lng: number}|null>}
+ */
+async function geocodeWithPhoton(address) {
+    try {
+        const response = await axios.get('https://photon.komoot.io/api/', {
+            params: {
+                q: address,
+                limit: 1,
+                lang: 'pt'
+            },
+            timeout: GEOCODING_TIMEOUT_MS
+        });
+
+        if (response.data && response.data.features && response.data.features.length > 0) {
+            const coords = response.data.features[0].geometry.coordinates;
+            // Photon returns [lng, lat] - reverse it
+            return { lat: coords[1], lng: coords[0] };
+        }
+        
+        return null;
+    } catch (error) {
+        if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT' || error.code === 'ENOTFOUND') {
+            console.warn('⚠️ Photon unavailable (network issue):', error.message);
+        } else {
+            console.warn('⚠️ Photon geocoding failed:', error.message);
+        }
+        return null;
+    }
+}
+
+/**
+ * Geocode an address to get latitude and longitude coordinates
+ * Tries multiple geocoding providers for maximum reliability
+ * @param {string} address - The full address to geocode
+ * @returns {Promise<{lat: number, lng: number}|null>} - Coordinates or null if geocoding fails
+ */
+async function geocodeAddress(address) {
+    if (!address || typeof address !== 'string' || address.trim() === '') {
+        return null;
+    }
+
+    // Try multiple geocoding providers in order of preference
+    const providers = [
+        { name: 'Photon', fn: geocodeWithPhoton },
+        { name: 'Nominatim', fn: geocodeWithNominatim },
+        { name: 'Google Maps', fn: geocodeWithGoogle }
+    ];
+    
+    for (const provider of providers) {
+        try {
+            const coords = await provider.fn(address);
+            
+            if (coords && !isNaN(coords.lat) && !isNaN(coords.lng)) {
+                console.log(`✅ Geocoding successful with ${provider.name}:`, address, '→', coords);
+                return coords;
+            }
+        } catch (error) {
+            console.warn(`⚠️ ${provider.name} geocoding error:`, error.message);
+        }
+        
+        // Small delay between provider attempts
+        await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    
+    console.warn('⚠️ All geocoding providers failed for address:', address);
+    return null;
 }
 
 /**
@@ -154,8 +256,8 @@ async function geocodeWithFallback(propertyData) {
             return coords;
         }
         
-        // Add a small delay between requests to respect Nominatim rate limits
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Add a small delay between requests to respect rate limits
+        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
     }
     
     console.warn('❌ All geocoding strategies failed for property');
@@ -194,6 +296,9 @@ async function autoGeocodePropertyData(propertyData) {
 
 module.exports = {
     geocodeAddress,
+    geocodeWithNominatim,
+    geocodeWithGoogle,
+    geocodeWithPhoton,
     geocodeWithFallback,
     buildAddressFromPropertyData,
     hasValidCoordinates,
