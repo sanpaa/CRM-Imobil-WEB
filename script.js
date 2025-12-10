@@ -138,17 +138,28 @@ const observer = new IntersectionObserver((entries) => {
         if (entry.isIntersecting) {
             entry.target.style.opacity = '1';
             entry.target.style.transform = 'translateY(0)';
+            entry.target.classList.add('fade-in');
         }
     });
 }, observerOptions);
 
 // Observe service cards
-document.querySelectorAll('.servico-card').forEach(card => {
+document.querySelectorAll('.service-card').forEach((card, index) => {
     card.style.opacity = '0';
     card.style.transform = 'translateY(20px)';
-    card.style.transition = 'all 0.6s ease';
+    card.style.transition = `all 0.6s ease ${index * 0.1}s`;
     observer.observe(card);
 });
+
+// Observe property cards with stagger effect
+setTimeout(() => {
+    document.querySelectorAll('.property-card').forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = `all 0.6s ease ${index * 0.1}s`;
+        observer.observe(card);
+    });
+}, 100);
 
 // Active nav link on scroll
 const sections = document.querySelectorAll('section[id]');
