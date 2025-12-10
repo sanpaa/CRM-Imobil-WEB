@@ -33,6 +33,56 @@ body {
     overflow-x: hidden;
 }
 
+/* Smooth scroll behavior */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Fade-in animation for elements */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* Shimmer loading effect for images */
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+.loading-shimmer {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite;
+}
+
+/* Pulse animation for floating button */
+@keyframes pulseRing {
+    0% {
+        box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7);
+    }
+    50% {
+        box-shadow: 0 0 0 15px rgba(37, 211, 102, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+    }
+}
+
 .container {
     max-width: 1200px;
     margin: 0 auto;
@@ -119,11 +169,28 @@ body {
 .btn-primary {
     background: var(--gradient-primary);
     color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.btn-primary:hover::before {
+    left: 100%;
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 8px 20px rgba(0, 74, 173, 0.3);
 }
 
 .btn-secondary {
@@ -344,8 +411,31 @@ section {
     box-shadow: var(--shadow-lg);
 }
 
+.property-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(0, 74, 173, 0.05), rgba(0, 102, 255, 0.05));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.property-card:hover::before {
+    opacity: 1;
+}
+
 .property-card.featured {
     border: 2px solid #FFD700;
+    box-shadow: 0 4px 20px rgba(255, 215, 0, 0.2);
+}
+
+.property-card.featured:hover {
+    box-shadow: 0 8px 30px rgba(255, 215, 0, 0.3);
 }
 
 .property-image {
@@ -412,12 +502,14 @@ section {
 .property-type {
     display: inline-block;
     padding: 0.3rem 0.8rem;
-    background: var(--primary-color);
+    background: var(--gradient-primary);
     color: white;
     border-radius: 20px;
     font-size: 0.8rem;
     font-weight: 600;
     margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .property-title {
@@ -425,6 +517,13 @@ section {
     font-weight: 600;
     margin-bottom: 0.5rem;
     color: var(--text-dark);
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 2.6rem;
 }
 
 .property-location {
@@ -439,8 +538,21 @@ section {
 .property-price {
     font-size: 1.75rem;
     font-weight: 700;
-    color: var(--primary-color);
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     margin-bottom: 1rem;
+    position: relative;
+}
+
+/* Fallback for browsers that don't support background-clip */
+@supports not (background-clip: text) {
+    .property-price {
+        color: var(--primary-color);
+        background: none;
+        -webkit-text-fill-color: initial;
+    }
 }
 
 .property-features {
@@ -716,31 +828,23 @@ section {
     right: 25px;
     width: 60px;
     height: 60px;
-    background: #25D366;
+    background: linear-gradient(135deg, #25D366, #128C7E);
     color: white;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 2rem;
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
     z-index: 1000;
     transition: var(--transition);
-    animation: pulse 2s infinite;
+    animation: pulseRing 2s infinite;
 }
 
 .whatsapp-float:hover {
-    transform: scale(1.1);
-    background: #20ba5a;
-}
-
-@keyframes pulse {
-    0%, 100% {
-        box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7);
-    }
-    50% {
-        box-shadow: 0 0 0 15px rgba(37, 211, 102, 0);
-    }
+    transform: scale(1.15);
+    box-shadow: 0 6px 30px rgba(37, 211, 102, 0.6);
+    animation: none;
 }
 
 /* Property Link Styles */
