@@ -10,8 +10,8 @@ class PropertyService {
     }
 
     /**
-     * Sanitize coordinates - convert empty strings and invalid values to null
-     * Keep undefined as undefined to prevent overwriting existing values
+     * Sanitize coordinates - convert empty strings and invalid values to null,
+     * but preserve undefined to prevent overwriting existing database values
      */
     _sanitizeCoordinates(data) {
         const sanitized = { ...data };
