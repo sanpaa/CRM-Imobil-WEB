@@ -97,9 +97,9 @@ Este arquivo é essencial para Single Page Applications (SPA) funcionarem corret
 
 O arquivo `netlify.toml` já inclui:
 
-✅ **Redirects para SPA:** Todas as rotas redirecionam para `index.html`
-✅ **Security Headers:** Proteção contra XSS, clickjacking, etc.
-✅ **Cache de Assets:** Otimização de performance para arquivos estáticos
+✅ **Redirecionamentos para SPA:** Todas as rotas redirecionam para `index.html`
+✅ **Cabeçalhos de Segurança:** Proteção contra XSS, clickjacking, etc.
+✅ **Cache de Recursos:** Otimização de performance para arquivos estáticos
 ✅ **Build otimizado:** Angular production build com minificação
 
 ## 🔒 Segurança

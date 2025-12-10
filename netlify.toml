@@ -24,6 +24,8 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
 
 # Cache static assets
+# Safe to use long cache with 'immutable' because Angular generates
+# unique filenames with content hashes (e.g., main-ZVPJFWL3.js)
 [[headers]]
   for = "/assets/*"
   [headers.values]
