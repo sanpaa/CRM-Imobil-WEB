@@ -19,16 +19,16 @@
   <!-- MarkerCluster CSS - integrity hashes not provided by unpkg, but HTTPS ensures transport security -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" crossorigin="anonymous" />
-</head>
-<body>
-  <app-root></app-root>
-  <!-- Load Leaflet and MarkerCluster from CDN before Angular app loads -->
+  <!-- Load Leaflet and MarkerCluster from CDN in head to ensure they're available before Angular app initializes -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
           integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
           crossorigin=""></script>
-  <!-- MarkerCluster JS - integrity hash not provided by unpkg, but HTTPS ensures transport security -->
+  <!-- MarkerCluster JS - must load after Leaflet and before Angular app initialization -->
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+  <app-root></app-root>
 </body>
 </html>
 
