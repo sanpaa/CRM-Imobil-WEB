@@ -563,13 +563,34 @@ async function handleFormSubmit(e) {
                 // Get detailed error message from response
                 const errorData = await uploadResponse.json().catch(() => ({}));
                 const errorMessage = errorData.details || errorData.error || 'Erro ao fazer upload das imagens.';
+                const documentation = errorData.documentation || '';
+                const helpCommands = errorData.helpCommands || [];
+                
                 console.error('Upload failed:', uploadResponse.status, errorMessage);
+                
+                // Build footer with help information
+                let footerHtml = '';
+                if (documentation) {
+                    footerHtml = `<div style="text-align: left; margin-top: 10px;">
+                        <small><strong>💡 Solução:</strong><br>${documentation}</small>`;
+                    
+                    if (helpCommands.length > 0) {
+                        footerHtml += `<br><br><small><strong>Comandos úteis:</strong><br>`;
+                        helpCommands.forEach(cmd => {
+                            footerHtml += `<code style="background: #f0f0f0; padding: 2px 5px; border-radius: 3px;">${cmd}</code><br>`;
+                        });
+                        footerHtml += `</small>`;
+                    }
+                    footerHtml += `</div>`;
+                }
+                
                 Swal.fire({
                     icon: 'error',
                     title: 'Erro no Upload',
                     text: errorMessage,
-                    footer: errorData.documentation ? `<small>${errorData.documentation}</small>` : '',
-                    confirmButtonColor: '#004AAD'
+                    footer: footerHtml,
+                    confirmButtonColor: '#004AAD',
+                    width: '600px'
                 });
             }
         } catch (error) {
