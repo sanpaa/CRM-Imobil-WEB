@@ -22,6 +22,9 @@ const multer = require('multer');
 const { hasValidSupabaseCredentials } = require('./src/utils/envUtils');
 const { geocodeAddress } = require('./src/utils/geocodingUtils');
 
+// Configuration constants
+const GEOCODING_RETRY_DELAY_MS = 1000; // Delay between geocoding retry attempts
+
 // Import Onion Architecture components
 const { SupabasePropertyRepository, SupabaseStoreSettingsRepository, SupabaseUserRepository } = require('./src/infrastructure/repositories');
 const { PropertyService, StoreSettingsService, UserService } = require('./src/application/services');
@@ -392,15 +395,53 @@ app.post('/api/geocode', async (req, res) => {
             return res.status(400).json({ error: 'Endereço é obrigatório' });
         }
         
-        const coords = await geocodeAddress(address);
+        console.log('🗺️ Geocoding request for:', address);
+        
+        // Try geocoding with the full address first
+        let coords = await geocodeAddress(address);
+        
+        // If that fails, try parsing and using fallback strategies
+        if (!coords) {
+            // Parse the address to extract components
+            const parts = address.split(',').map(p => p.trim());
+            
+            // Try different combinations
+            const strategies = [];
+            
+            // Try without the first part (street)
+            if (parts.length > 2) {
+                strategies.push(parts.slice(1).join(', '));
+            }
+            
+            // Try just city, state, Brasil
+            if (parts.length >= 3) {
+                const cityPart = parts[parts.length - 3];
+                const statePart = parts[parts.length - 2];
+                strategies.push(`${cityPart}, ${statePart}, Brasil`);
+            }
+            
+            // Try each strategy
+            for (const strategyAddress of strategies) {
+                console.log('🗺️ Trying fallback geocoding:', strategyAddress);
+                coords = await geocodeAddress(strategyAddress);
+                if (coords) {
+                    console.log('✅ Fallback geocoding succeeded');
+                    break;
+                }
+                // Add delay to respect rate limits
+                await new Promise(resolve => setTimeout(resolve, GEOCODING_RETRY_DELAY_MS));
+            }
+        }
         
         if (coords) {
+            console.log('✅ Geocoding successful:', coords);
             res.json(coords);
         } else {
+            console.warn('⚠️ Geocoding failed for address:', address);
             res.status(404).json({ error: 'Endereço não encontrado' });
         }
     } catch (error) {
-        console.error('Geocoding error:', error);
+        console.error('❌ Geocoding error:', error);
         res.status(500).json({ error: 'Erro ao geocodificar endereço' });
     }
 });
