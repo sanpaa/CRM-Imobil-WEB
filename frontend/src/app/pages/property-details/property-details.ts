@@ -139,12 +139,13 @@ export class PropertyDetailsComponent implements OnInit, AfterViewInit {
   }
 
   get images(): string[] {
-    if (!this.property) return [];
-    return this.property.imageUrls || (this.property.imageUrl ? [this.property.imageUrl] : []);
+    if (!this.property) return ['https://picsum.photos/200'];
+    const propertyImages = this.property.imageUrls || (this.property.imageUrl ? [this.property.imageUrl] : []);
+    return propertyImages.length > 0 ? propertyImages : ['https://picsum.photos/200'];
   }
 
-  get currentImage(): string | null {
+  get currentImage(): string {
     const imgs = this.images;
-    return imgs.length > 0 ? imgs[this.currentImageIndex] : null;
+    return imgs[this.currentImageIndex];
   }
 }

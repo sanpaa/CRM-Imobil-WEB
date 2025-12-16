@@ -1,11 +1,18 @@
 /* Modern Real Estate Website Styles - Alancarmo Corretor */
 
-/* CSS Variables */
+/* Cores da Marca - Manual Alan Carmo */
 :root {
-    --primary-color: #1a1a1a;
-    --primary-dark: #000000;
-    --primary-light: #404040;
-    --secondary-color: #25D366;
+  /* Cores Principais da Marca */
+  --brand-blue: #004AAD;
+  --brand-orange: #FF6B00;
+  --brand-blue-light: #0066CC;
+  --brand-orange-light: #FF8533;
+  
+  /* Cores de Interface */
+  --primary-color: #004AAD;
+  --secondary-color: #FF6B00;
+  --accent-color: #FF8533;
+
     --text-dark: #1a1a1a;
     --text-light: #666666;
     --bg-light: #f5f5f5;
@@ -17,6 +24,7 @@
     --gradient-primary: linear-gradient(135deg, #1a1a1a 0%, #404040 100%);
     --gradient-dark: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
     --transition: all 0.3s ease;
+    --font-primary: 'Montserrat', 'Gotham', 'Helvetica Neue', Arial, sans-serif;
 }
 
 /* Reset & Base */
@@ -27,11 +35,23 @@
 }
 
 body {
-    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: var(--font-primary);
+    font-weight: 500;
     color: var(--text-dark);
     line-height: 1.6;
     overflow-x: hidden;
 }
+h1, h2, h3 {
+    font-family: var(--font-primary);
+    font-weight: 700;
+    /* color: var(--primary-color); */
+}
+
+h4, h5, h6 {
+    font-family: var(--font-primary);
+    font-weight: 600;
+}
+
 
 .container {
     max-width: 1200px;
@@ -101,54 +121,51 @@ body {
     cursor: pointer;
 }
 
-/* Buttons */
-.btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: 600;
-    transition: var(--transition);
-    border: none;
-    cursor: pointer;
-    font-size: 0.95rem;
-}
-
+/* Botões Primários com Azul da Marca */
 .btn-primary {
-    background: var(--gradient-primary);
-    color: white;
+  background: linear-gradient(135deg, var(--brand-blue), var(--brand-blue-light)) !important;
+  border: none !important;
+  transition: all 0.3s ease !important;
 }
 
 .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+  background: linear-gradient(135deg, var(--brand-blue-light), var(--brand-blue)) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 74, 173, 0.3) !important;
 }
 
-.btn-secondary {
-    background: white;
-    color: var(--primary-color);
-    border: 2px solid var(--primary-color);
+/* Botões com Laranja para Ações de Destaque */
+.btn-whatsapp,
+.btn-contact {
+  background: linear-gradient(135deg, var(--brand-orange), var(--brand-orange-light)) !important;
+  border: none !important;
+  color: white !important;
 }
 
-.btn-secondary:hover {
-    background: var(--primary-color);
-    color: white;
+.btn-whatsapp:hover,
+.btn-contact:hover {
+  background: linear-gradient(135deg, var(--brand-orange-light), var(--brand-orange)) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 0, 0.3) !important;
 }
 
-.btn-light {
-    background: white;
-    color: var(--primary-color);
+/* Links com Cor da Marca */
+a {
+  color: var(--brand-blue);
+  transition: color 0.3s ease;
 }
 
-.btn-light:hover {
-    background: var(--bg-light);
+a:hover {
+  color: var(--brand-blue-light);
 }
 
-.btn-large {
-    padding: 1rem 2rem;
-    font-size: 1.05rem;
+/* Badges e Tags */
+.badge-primary {
+  background: var(--brand-blue) !important;
+}
+
+.badge-featured {
+  background: var(--brand-orange) !important;
 }
 
 /* Hero Section */
@@ -989,7 +1006,7 @@ section {
 
 .leaflet-popup-content {
     margin: 12px 16px !important;
-    font-family: 'Poppins', sans-serif !important;
+    /* font-family: 'Poppins', sans-serif !important; */
 }
 
 .map-popup {

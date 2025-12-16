@@ -12,9 +12,9 @@ import { Property } from '../../models/property.model';
 export class PropertyCardComponent {
   @Input() property!: Property;
 
-  getFirstImage(): string | null {
+  getFirstImage(): string {
     const images = this.property.imageUrls || (this.property.imageUrl ? [this.property.imageUrl] : []);
-    return images.length > 0 ? images[0] : null;
+    return images.length > 0 ? images[0] : 'https://picsum.photos/200';
   }
 
   getImagesCount(): number {

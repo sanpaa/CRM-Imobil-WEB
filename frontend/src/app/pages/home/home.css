@@ -1,0 +1,58 @@
+.carousel-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: visible; /* 🔥 ISSO RESOLVE */
+}
+
+.properties-carousel {
+  position: relative;
+  overflow: visible;
+}
+
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #003366;
+  color: #fff;
+  border: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 26px;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+}
+
+/* Desktop */
+@media (min-width: 768px) {
+  .carousel-btn.left {
+    left: 0;
+    transform: translate(-100%, -50%);
+  }
+
+  .carousel-btn.right {
+    right: 0;
+    transform: translate(100%, -50%);
+  }
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+  .carousel-btn.left {
+    left: 8px;
+    transform: translateY(-50%);
+  }
+
+  .carousel-btn.right {
+    right: 8px;
+    transform: translateY(-50%);
+  }
+}

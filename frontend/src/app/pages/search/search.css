@@ -1,5 +1,13 @@
+/* Cores da Marca - Manual Alan Carmo */
+:root {
+  --brand-blue: #004AAD;
+  --brand-orange: #FF6B00;
+  --brand-blue-light: #0066CC;
+  --brand-orange-light: #FF8533;
+}
+
 .search-hero {
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  background: linear-gradient(135deg, var(--brand-blue) 0%, var(--brand-blue-light) 100%);
   color: var(--white);
   padding: 3rem 0 2rem;
   margin-top: 80px;
@@ -49,7 +57,6 @@
   padding: 0.75rem;
   border: 2px solid var(--gray);
   border-radius: 8px;
-  font-family: 'Poppins', sans-serif;
   font-size: 1rem;
   transition: border-color 0.3s ease;
 }
@@ -57,7 +64,7 @@
 .filter-group input:focus,
 .filter-group select:focus {
   outline: none;
-  border-color: var(--primary-color);
+  border-color: var(--brand-blue);
 }
 
 .filter-actions {
@@ -85,7 +92,6 @@
   padding: 0.5rem 1rem;
   border: 2px solid var(--gray);
   border-radius: 8px;
-  font-family: 'Poppins', sans-serif;
   cursor: pointer;
 }
 
@@ -124,18 +130,17 @@
 
 .btn-pagination {
   padding: 0.5rem 1rem;
-  border: 2px solid var(--primary-color);
+  border: 2px solid var(--brand-blue);
   background: var(--bg-white);
-  color: var(--primary-color);
+  color: var(--brand-blue);
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
   transition: all 0.3s ease;
-  font-family: 'Poppins', sans-serif;
 }
 
 .btn-pagination:hover:not(:disabled) {
-  background: var(--primary-color);
+  background: var(--brand-blue);
   color: var(--white);
 }
 
@@ -145,7 +150,7 @@
 }
 
 .btn-pagination.active {
-  background: var(--primary-color);
+  background: var(--brand-blue);
   color: var(--white);
 }
 
@@ -186,16 +191,17 @@
   cursor: pointer;
   font-weight: 500;
   transition: all 0.3s ease;
-  font-family: 'Poppins', sans-serif;
+  color: var(--brand-blue);
 }
 
 .view-toggle button.active {
-  background: var(--primary-color);
+  background: var(--brand-blue);
   color: white;
 }
 
 .view-toggle button:not(.active):hover {
-  background: var(--light-gray);
+  background: rgba(0, 74, 173, 0.1);
+  color: var(--brand-blue);
 }
 
 /* Map View */
@@ -241,7 +247,7 @@
 
 .spinner {
   border: 4px solid var(--gray);
-  border-top: 4px solid var(--primary-color);
+  border-top: 4px solid var(--brand-blue);
   border-radius: 50%;
   width: 50px;
   height: 50px;
@@ -265,5 +271,158 @@
 
   .view-toggle button {
     flex: 1;
+  }
+}
+
+/* Custom Sort Dropdown */
+.custom-sort-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.sort-dropdown-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  background: linear-gradient(135deg, var(--brand-blue), var(--brand-blue-light));
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 74, 173, 0.25);
+  font-size: 0.95rem;
+  min-width: 220px;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+
+.sort-dropdown-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 74, 173, 0.35);
+  background: linear-gradient(135deg, var(--brand-blue-light), var(--brand-blue));
+}
+
+.sort-dropdown-toggle i:first-child {
+  font-size: 1.1rem;
+}
+
+.sort-dropdown-toggle i:last-child {
+  font-size: 0.8rem;
+  transition: transform 0.3s ease;
+}
+
+.sort-dropdown-toggle i:last-child.rotated {
+  transform: rotate(180deg);
+}
+
+.custom-sort-dropdown .dropdown-menu {
+  border: 2px solid var(--brand-blue);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 74, 173, 0.2);
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+  min-width: 220px;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  background: white;
+  transform-origin: top;
+  transform: scaleY(0);
+  opacity: 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.custom-sort-dropdown .dropdown-menu.show {
+  transform: scaleY(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.custom-sort-dropdown .dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--dark-gray);
+}
+
+.custom-sort-dropdown .dropdown-item i {
+  color: var(--brand-blue);
+  width: 20px;
+  text-align: center;
+}
+
+.custom-sort-dropdown .dropdown-item:hover {
+  background: linear-gradient(135deg, rgba(0, 74, 173, 0.08), rgba(0, 102, 204, 0.08));
+  color: var(--brand-blue);
+  transform: translateX(5px);
+}
+
+.custom-sort-dropdown .dropdown-item.active {
+  background: linear-gradient(135deg, var(--brand-blue), var(--brand-blue-light));
+  color: white;
+}
+
+.custom-sort-dropdown .dropdown-item.active i {
+  color: white;
+}
+
+/* Accent com laranja da marca */
+.filter-actions .btn-primary {
+  background: linear-gradient(135deg, var(--brand-blue), var(--brand-blue-light));
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.filter-actions .btn-primary:hover {
+  background: linear-gradient(135deg, var(--brand-blue-light), var(--brand-blue));
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 74, 173, 0.3);
+}
+
+.filter-actions .btn-secondary {
+  background: white;
+  color: var(--brand-blue);
+  border: 2px solid var(--brand-blue);
+  transition: all 0.3s ease;
+}
+
+.filter-actions .btn-secondary:hover {
+  background: var(--brand-blue);
+  color: white;
+}
+
+/* Detalhes em laranja para destaque */
+.no-results .btn-primary {
+  background: linear-gradient(135deg, var(--brand-orange), var(--brand-orange-light));
+  border: none;
+}
+
+.no-results .btn-primary:hover {
+  background: linear-gradient(135deg, var(--brand-orange-light), var(--brand-orange));
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 0, 0.3);
+}
+
+@media (max-width: 768px) {
+  /* ...existing code... */
+  
+  .sort-dropdown-toggle {
+    width: 100%;
+    min-width: unset;
+  }
+  
+  .custom-sort-dropdown .dropdown-menu {
+    width: 100%;
   }
 }

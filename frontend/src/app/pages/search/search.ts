@@ -11,9 +11,9 @@ import { Property, PropertyFilters } from '../../models/property.model';
 declare const L: any;
 
 // Fix Leaflet's default icon path issue with webpack
-const iconRetinaUrl = 'https://unpkg.com/leaflet@1.4.1/dist/images/marker-icon-2x.png';
-const iconUrl = 'https://unpkg.com/leaflet@1.4.1/dist/images/marker-icon.png';
-const shadowUrl = 'https://unpkg.com/leaflet@1.4.1/dist/images/marker-shadow.png';
+const iconRetinaUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png';
+const iconUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png';
+const shadowUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png';
 
 // We'll configure the icon after ensuring L is loaded
 
@@ -49,6 +49,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   currentView: 'grid' | 'map' = 'grid';
   sortBy = 'featured';
   mapLoading = false;
+  dropdownOpen = false; // Adicionar esta propriedade
   
   // Available cities
   availableCities: string[] = [];
@@ -63,6 +64,14 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   
   ngOnInit(): void {
     this.loadProperties();
+    
+    // Adicionar listener para fechar dropdown ao clicar fora
+    document.addEventListener('click', (event) => {
+      const dropdown = document.querySelector('.custom-sort-dropdown');
+      if (dropdown && !dropdown.contains(event.target as Node)) {
+        this.dropdownOpen = false;
+      }
+    });
   }
   
   ngAfterViewInit(): void {
@@ -152,6 +161,26 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     this.updatePagination();
   }
   
+  getSortLabel(): string {
+    const labels: { [key: string]: string } = {
+      'featured': 'Destaques primeiro',
+      'price-asc': 'Menor preço',
+      'price-desc': 'Maior preço',
+      'newest': 'Mais recentes'
+    };
+    return labels[this.sortBy] || 'Ordenar por';
+  }
+  
+  setSortBy(value: string): void {
+    this.sortBy = value;
+    this.sortProperties();
+    this.dropdownOpen = false; // Fechar o dropdown
+  }
+  
+  toggleDropdown(): void {
+    this.dropdownOpen = !this.dropdownOpen;
+  }
+  
   updatePagination(): void {
     this.totalPages = Math.ceil(this.filteredProperties.length / this.propertiesPerPage);
     const startIndex = (this.currentPage - 1) * this.propertiesPerPage;
@@ -239,9 +268,6 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    console.log('Initializing map...');
-    console.log('Properties to display:', this.filteredProperties.length);
-    console.log('Properties with coordinates:', this.filteredProperties.filter(p => p.latitude && p.longitude).length);
     
     try {
       // Configure default Leaflet icon
@@ -267,7 +293,6 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
         maxZoom: 20
       }).addTo(this.map);
 
-      console.log('Map initialized, adding markers...');
       this.updateMapMarkers();
       this.mapLoading = false;
     } catch (error) {
@@ -289,30 +314,19 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const validProperties = this.filteredProperties.filter(p => p.latitude && p.longitude);
     
-    console.log(`Found ${validProperties.length} properties with coordinates out of ${this.filteredProperties.length} total`);
     
     // Log sample property coordinates for debugging (avoid logging sensitive data)
     if (this.filteredProperties.length > 0) {
       const sample = this.filteredProperties[0];
-      console.log('Sample property coordinates:', {
-        id: sample?.id,
-        latitude: sample?.latitude,
-        longitude: sample?.longitude
-      });
     }
 
     if (validProperties.length === 0) {
-      console.warn('No properties with valid coordinates');
-      this.map.setView([-23.550520, -46.633308], 12);
-      return;
     }
 
     const bounds: L.LatLngTuple[] = [];
 
     // Check if markerClusterGroup is available
     if (typeof L === 'undefined' || typeof L.markerClusterGroup !== 'function') {
-      console.log(L);
-      console.error('L.markerClusterGroup is not available! Make sure leaflet.markercluster.js is loaded properly.');
       return;
     }
 
@@ -364,7 +378,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
           <div style="color: #666; font-size: 14px; margin-bottom: 10px;">
             <i class="fas fa-map-marker-alt" style="color: #004AAD;"></i> ${location}
           </div>
-          <div style="font-size: 18px; font-weight: bold; color: #004AAD; margin-bottom: 10px;">
+          <div style="font-size: 18px; font-weight: bold, color: #004AAD; margin-bottom: 10px;">
             R$ ${this.propertyService.formatPrice(property.price)}
           </div>
           <div style="color: #666; font-size: 14px; margin-bottom: 15px;">
@@ -391,12 +405,10 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     // Add cluster group to map
     this.map.addLayer(this.markerCluster);
     
-    console.log(`Added ${validProperties.length} markers to the map`);
 
     // Fit map to show all markers
     if (bounds.length > 0) {
       this.map.fitBounds(bounds, { padding: [50, 50] });
-      console.log('Map bounds fitted to show all markers');
     }
   }
   

@@ -61,7 +61,7 @@
     </div>
     
     <div *ngIf="loading" class="properties-grid">
-      <div *ngFor="let i of [1,2,3,4,5,6]" class="skeleton-card">
+      <div *ngFor="let i of [1,2,3]" class="skeleton-card">
         <div class="skeleton skeleton-image"></div>
         <div class="skeleton-content">
           <div class="skeleton skeleton-line short"></div>
@@ -72,9 +72,40 @@
       </div>
     </div>
 
-    <div *ngIf="!loading && !error && properties.length > 0" class="properties-grid">
+    <!-- <div *ngIf="!loading && !error && properties.length > 0" class="properties-grid">
       <app-property-card *ngFor="let property of properties" [property]="property"></app-property-card>
+    </div> -->
+    <div class="carousel-wrapper">
+    <div class="properties-carousel">
+
+      <button class="carousel-btn left"
+              (click)="prev()"
+              [disabled]="currentIndex === 0">
+        ‹
+      </button>
+
+      <div class="properties-grid">
+        <app-property-card
+          *ngFor="let property of visibleProperties"
+          [property]="property">
+        </app-property-card>
+      </div>
+
+      <button class="carousel-btn right"
+              (click)="next()"
+              [disabled]="currentIndex + pageSize >= properties.length">
+        ›
+      </button>
+
     </div>
+  </div>
+
+    <div class="text-center mt-4">
+      <a routerLink="/buscar" class="btn btn-outline-primary">
+        Ver mais imóveis
+      </a>
+    </div>
+
 
     <div *ngIf="!loading && !error && properties.length === 0" class="empty-state">
       <i class="fas fa-home"></i>

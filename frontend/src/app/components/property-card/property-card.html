@@ -1,4 +1,4 @@
-<div class="property-card" [class.featured]="property.featured" [routerLink]="['/imovel', property.id]" style="cursor: pointer;">
+<div class="property-card p-2" [class.featured]="property.featured" [routerLink]="['/imovel', property.id]" style="cursor: pointer;">
   <div class="property-image">
     <img 
       *ngIf="getFirstImage()" 
@@ -15,7 +15,7 @@
     </span>
   </div>
   <div class="property-content">
-    <span class="property-type">{{ property.type || 'Imóvel' }}</span>
+    <span class="property-type w-25 mt-1 p-1 text-center">{{ property.type || 'Imóvel' }}</span>
     <h3 class="property-title">{{ property.title }}</h3>
     <div class="property-location">
       <i class="fas fa-map-marker-alt"></i>
@@ -24,7 +24,7 @@
     <div class="property-price">
       R$ {{ formatPrice(property.price) }}
     </div>
-    <div *ngIf="hasDetails()" class="property-details">
+    <div *ngIf="hasDetails()" class="property-details mb-2">
       <span *ngIf="property.bedrooms" class="property-detail">
         <i class="fas fa-bed"></i> {{ property.bedrooms }} quartos
       </span>

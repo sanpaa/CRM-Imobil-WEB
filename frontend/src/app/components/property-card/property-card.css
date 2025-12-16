@@ -1,0 +1,41 @@
+.property-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.property-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1; /* ESSENCIAL */
+}
+
+.property-actions {
+  margin-top: auto;
+  display: flex;
+  gap: 0.5rem;
+}
+
+
+.property-details {
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: 0.25rem;     /* 👈 quase nada na vertical */
+  column-gap: 0.75rem; /* 👈 espaço só entre os itens */
+}
+
+.property-detail {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+
+.property-description{
+   overflow: hidden;
+   display: -webkit-box;
+   -webkit-line-clamp: 3; /* number of lines to show */
+           line-clamp: 3; 
+   -webkit-box-orient: vertical;
+
+}

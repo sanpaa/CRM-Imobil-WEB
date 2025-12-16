@@ -12,9 +12,14 @@ import { Property } from '../../models/property.model';
   styleUrl: './home.css',
 })
 export class HomeComponent implements OnInit {
-  properties: Property[] = [];
+  properties: Property[] = [];        // até 9
+  visibleProperties: Property[] = []; // 3 por vez
+
   loading = true;
   error = false;
+
+  pageSize = 3;
+  currentIndex = 0;
 
   constructor(private propertyService: PropertyService) {}
 
@@ -25,14 +30,39 @@ export class HomeComponent implements OnInit {
   loadProperties(): void {
     this.propertyService.getAllProperties().subscribe({
       next: (properties) => {
-        this.properties = properties.filter(p => !p.sold);
+        this.properties = properties
+          .filter(p => !p.sold)
+          .slice(0, 9); // 🔥 LIMITE TOTAL
+
+        this.updateVisible();
         this.loading = false;
       },
-      error: (err) => {
-        console.error('Error loading properties:', err);
+      error: () => {
         this.error = true;
         this.loading = false;
       }
     });
   }
+
+  updateVisible(): void {
+    this.visibleProperties = this.properties.slice(
+      this.currentIndex,
+      this.currentIndex + this.pageSize
+    );
+  }
+
+  next(): void {
+    if (this.currentIndex + this.pageSize < this.properties.length) {
+      this.currentIndex += this.pageSize;
+      this.updateVisible();
+    }
+  }
+
+  prev(): void {
+    if (this.currentIndex - this.pageSize >= 0) {
+      this.currentIndex -= this.pageSize;
+      this.updateVisible();
+    }
+  }
 }
+
