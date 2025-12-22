@@ -1,6 +1,10 @@
 /* HERO */
 .search-hero {
-  background: linear-gradient(135deg, #003366, #2c7a7b);
+  background: linear-gradient(
+      135deg,
+      #1a2a6c 0%,
+      #004AAD 50%,
+      #0066FF 100%);
   padding: 80px 20px;
   color: white;
   text-align: center;
@@ -212,4 +216,18 @@
 .page-btn:last-child {
   padding: 0 16px;
   font-weight: 700;
+}
+.results-area {
+  position: relative;
+}
+
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.85);
+  z-index: 820;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }

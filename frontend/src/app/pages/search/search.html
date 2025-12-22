@@ -8,7 +8,7 @@
 
 <!-- SEARCH LAYOUT -->
 <div class="search-layout container mb-5" style="max-width: 1500px;">
- 
+
   <!-- FILTER SIDEBAR -->
   <aside class="filters-sidebar">
 
@@ -17,10 +17,10 @@
     <!-- Busca livre -->
     <div class="filter-group">
       <label>Busca livre</label>
-      <input id="search"
+      <input
         type="text"
         [(ngModel)]="filters.searchText"
-        (input)="applyFilters()"
+        (keyup.enter)="applyFilters()"
         placeholder="Título, bairro, descrição..." />
     </div>
 
@@ -61,12 +61,12 @@
     <!-- Preço -->
     <div class="filter-group">
       <label>Preço mínimo</label>
-      <input type="number" [(ngModel)]="filters.priceMin" (input)="applyFilters()" placeholder="R$ 0">
+      <input type="number" [(ngModel)]="filters.priceMin" (keyup.enter)="applyFilters()"placeholder="R$ 0">
     </div>
 
     <div class="filter-group">
       <label>Preço máximo</label>
-      <input type="number" [(ngModel)]="filters.priceMax" (input)="applyFilters()" placeholder="Sem limite">
+      <input type="number" [(ngModel)]="filters.priceMax" (keyup.enter)="applyFilters()" placeholder="Sem limite">
     </div>
 
     <!-- Ações -->
@@ -84,88 +84,79 @@
   <!-- RESULTS AREA -->
   <main class="results-area">
 
-    <!-- LOADING -->
-    <div *ngIf="loading" class="loading-wrapper">
+    <!-- HEADER -->
+    <div class="results-header">
+      <span class="results-count">{{ resultsCount }}</span>
+
+      <div class="view-toggle">
+        <button
+          [class.active]="currentView === 'grid'"
+          (click)="switchView('grid')">
+          <i class="fas fa-th"></i>
+        </button>
+
+        <button
+          [class.active]="currentView === 'map'"
+          (click)="switchView('map')">
+          <i class="fas fa-map"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- LOADING OVERLAY (NÃO REMOVE DOM) -->
+    <div class="loading-overlay" *ngIf="loading">
       <div class="spinner"></div>
       <p>Carregando imóveis...</p>
     </div>
 
-    <!-- CONTEÚDO REAL -->
-    <ng-container *ngIf="!loading">
+    <!-- MAP VIEW (SEMPRE NO DOM) -->
+    <div class="map-wrapper" [hidden]="currentView !== 'map'">
+      <div id="map"></div>
+    </div>
 
-      <!-- RESULTS HEADER -->
-      <div class="results-header">
-        <span class="results-count">{{ resultsCount }}</span>
+    <!-- GRID VIEW -->
+    <div class="properties-grid" [hidden]="currentView !== 'grid'">
+      <app-property-card
+        *ngFor="let property of displayedProperties"
+        [property]="property">
+      </app-property-card>
+    </div>
 
-        <div class="view-toggle">
-          <button
-            [class.active]="currentView === 'grid'"
-            (click)="switchView('grid')">
-            <i class="fas fa-th"></i>
-          </button>
+    <!-- NO RESULTS -->
+    <div *ngIf="!loading && displayedProperties.length === 0" class="no-results">
+      <i class="fas fa-search"></i>
+      <h3>Nenhum imóvel encontrado</h3>
+      <p>Tente ajustar os filtros</p>
+    </div>
 
-          <button
-            [class.active]="currentView === 'map'"
-            (click)="switchView('map')">
-            <i class="fas fa-map"></i>
-          </button>
-        </div>
-      </div>
+    <!-- PAGINATION -->
+    <div class="pagination" *ngIf="totalPages > 1 && currentView === 'grid'">
 
-      <!-- MAP VIEW -->
-      <div *ngIf="currentView === 'map'" class="map-wrapper">
-        <div id="map"></div>
-      </div>
+      <button
+        class="page-btn"
+        [disabled]="currentPage === 1"
+        (click)="changePage(currentPage - 1)">
+        ‹ Anterior
+      </button>
 
-      <!-- GRID VIEW -->
-      <div *ngIf="currentView === 'grid'" class="properties-grid">
-        <app-property-card
-          *ngFor="let property of displayedProperties"
-          [property]="property">
-        </app-property-card>
-      </div>
+      <button
+        *ngFor="let page of paginationPages"
+        class="page-btn"
+        [class.active]="page === currentPage"
+        [disabled]="page === -1"
+        (click)="page !== -1 && changePage(page)">
+        {{ page === -1 ? '...' : page }}
+      </button>
 
+      <button
+        class="page-btn"
+        [disabled]="currentPage === totalPages"
+        (click)="changePage(currentPage + 1)">
+        Próxima ›
+      </button>
 
-      <!-- PAGINATION -->
-      <div class="pagination" *ngIf="totalPages > 1">
-
-        <button
-          class="page-btn"
-          [disabled]="currentPage === 1"
-          (click)="changePage(currentPage - 1)">
-          ‹ Anterior
-        </button>
-
-        <button
-          *ngFor="let page of paginationPages"
-          class="page-btn"
-          [class.active]="page === currentPage"
-          [disabled]="page === -1"
-          (click)="page !== -1 && changePage(page)">
-          {{ page === -1 ? '...' : page }}
-        </button>
-
-        <button
-          class="page-btn"
-          [disabled]="currentPage === totalPages"
-          (click)="changePage(currentPage + 1)">
-          Próxima ›
-        </button>
-
-      </div>
-
-
-
-      <!-- NO RESULTS -->
-      <div *ngIf="displayedProperties.length === 0" class="no-results">
-        <i class="fas fa-search"></i>
-        <h3>Nenhum imóvel encontrado</h3>
-        <p>Tente ajustar os filtros</p>
-      </div>
-
-    </ng-container>
+    </div>
 
   </main>
 
-  
 </div>
