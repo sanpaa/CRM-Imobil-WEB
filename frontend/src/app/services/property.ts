@@ -48,6 +48,9 @@ export class PropertyService {
     }>(this.apiUrl, { params });
   }
 
+  getStats(): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/stats`);
+  }
 
   getProperty(id: string): Observable<Property> {
     return this.http.get<Property>(`${this.apiUrl}/${id}`);

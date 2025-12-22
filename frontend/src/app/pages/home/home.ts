@@ -166,9 +166,12 @@ export class HomeComponent implements OnInit {
 
   loadProperties(): void {
     this.propertyService.getAllProperties().subscribe({
-      next: (properties) => {
-        this.properties = properties
-          .filter(p => !p.sold)
+      next: (properties : any) => {
+      console.log('RESPOSTA DA API:', properties);
+      const list = properties.data;
+
+        this.properties = list
+          .filter((p: Property) => !p.sold)
           .slice(0, 9);
 
         this.updateVisible();

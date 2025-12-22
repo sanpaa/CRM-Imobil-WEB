@@ -26,8 +26,6 @@ const shadowUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png
   styleUrl: './search.css',
 })
 export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
-  allProperties: Property[] = [];
-  filteredProperties: Property[] = [];
   displayedProperties: Property[] = [];
   citiesDropdownItems: any[] = [];
 
@@ -43,7 +41,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   
   // Pagination
   currentPage = 1;
-  propertiesPerPage = 9;
+  propertiesPerPage = 6;
   totalPages = 0;
   totalResults = 0;
 
@@ -148,37 +146,19 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
         },
         error: () => {
           this.loading = false;
+          this.error = true;
         }
       });
   }
 
-  populateCityFilter(): void {
-    const cities = this.allProperties
-      .map(p => p.city)
-      .filter((c): c is string => !!c);
-
-    this.availableCities = Array.from(new Set(cities)).sort();
-
-    // ✅ AQUI é o lugar correto
-    this.citiesDropdownItems = [
-      { label: 'Todas as cidades', value: '' },
-      ...this.availableCities.map(city => ({
-        label: city,
-        value: city
-      }))
-    ];
-  }
+  
   
   applyFilters(): void {
-    this.filteredProperties = this.propertyService.filterProperties(this.allProperties, this.filters);
     this.currentPage = 1;
     this.loadProperties();
 
-    this.sortProperties();
-    
-    // Update map markers if in map view
     if (this.currentView === 'map' && this.map) {
-      this.updateMapMarkers();
+      setTimeout(() => this.updateMapMarkers(), 100);
     }
   }
   
@@ -195,36 +175,6 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     this.applyFilters();
   }
   
-  sortProperties(): void {
-    switch (this.sortBy) {
-      case 'price-asc':
-        this.filteredProperties.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-desc':
-        this.filteredProperties.sort((a, b) => b.price - a.price);
-        break;
-      case 'newest':
-        this.filteredProperties.sort((a, b) => {
-          const dateA = new Date(a.createdAt || 0).getTime();
-          const dateB = new Date(b.createdAt || 0).getTime();
-          return dateB - dateA;
-        });
-        break;
-      case 'featured':
-      default:
-        this.filteredProperties.sort((a, b) => {
-          if (a.featured && !b.featured) return -1;
-          if (!a.featured && b.featured) return 1;
-          const dateA = new Date(a.createdAt || 0).getTime();
-          const dateB = new Date(b.createdAt || 0).getTime();
-          return dateB - dateA;
-        });
-        break;
-    }
-    
-    this.updatePagination();
-  }
-  
   getSortLabel(): string {
     const labels: { [key: string]: string } = {
       'featured': 'Destaques primeiro',
@@ -237,7 +187,6 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   
   setSortBy(value: string): void {
     this.sortBy = value;
-    this.sortProperties();
     this.dropdownOpen = false; // Fechar o dropdown
   }
   
@@ -245,20 +194,19 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     this.dropdownOpen = !this.dropdownOpen;
   }
   
-  updatePagination(): void {
-    this.totalPages = Math.ceil(this.filteredProperties.length / this.propertiesPerPage);
-    const startIndex = (this.currentPage - 1) * this.propertiesPerPage;
-    const endIndex = Math.min(startIndex + this.propertiesPerPage, this.filteredProperties.length);
-    this.displayedProperties = this.filteredProperties.slice(startIndex, endIndex);
-  }
-  
   changePage(page: number): void {
     if (page < 1 || page > this.totalPages) return;
+
     this.currentPage = page;
-    this.updatePagination();
+    this.loadProperties();
+
+    if (this.currentView === 'map') {
+      setTimeout(() => this.updateMapMarkers(), 200);
+    }
+
     window.scrollTo({ top: 300, behavior: 'smooth' });
   }
-  
+
   private isLeafletAvailable(): boolean {
     if (typeof L === 'undefined') {
       console.error('Leaflet library not loaded! Please check if leaflet.js is included in index.html');
@@ -376,12 +324,14 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
       this.map.removeLayer(this.markerCluster);
     }
 
-    const validProperties = this.filteredProperties.filter(p => p.latitude && p.longitude);
+    const validProperties = this.displayedProperties.filter(
+      p => p.latitude && p.longitude
+    );
     
     
     // Log sample property coordinates for debugging (avoid logging sensitive data)
-    if (this.filteredProperties.length > 0) {
-      const sample = this.filteredProperties[0];
+    if (this.displayedProperties.length > 0) {
+      const sample = this.displayedProperties[0];
     }
 
     if (validProperties.length === 0) {
@@ -477,7 +427,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   }
   
   get resultsCount(): string {
-    const total = this.filteredProperties.length;
+    const total = this.totalResults;
     return `${total} ${total === 1 ? 'imóvel encontrado' : 'imóveis encontrados'}`;
   }
   

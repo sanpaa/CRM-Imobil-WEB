@@ -70,20 +70,17 @@ export class AdminComponent implements OnInit {
   }
 
   loadStats(): void {
-    fetch('/api/stats').then(res => res.json()).then(stats => {
-      this.stats = stats;
+    this.propertyService.getStats().subscribe({
+      next: stats => this.stats = stats,
+      error: err => console.error('Erro ao carregar stats', err)
     });
   }
 
   loadProperties(): void {
     this.loading = true;
     this.propertyService.getAllProperties().subscribe({
-      next: (properties) => {
-        this.properties = properties.sort((a, b) => {
-          const dateA = new Date(a.createdAt || 0).getTime();
-          const dateB = new Date(b.createdAt || 0).getTime();
-          return dateB - dateA;
-        });
+      next: (response: any) => {
+        this.properties = response.data; // ou response.results
         this.loading = false;
       },
       error: (err) => {

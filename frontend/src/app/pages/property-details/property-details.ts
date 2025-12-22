@@ -56,8 +56,11 @@ export class PropertyDetailsComponent implements OnInit, AfterViewInit {
   loadProperty(id: string): void {
     this.loading = true;
     this.propertyService.getAllProperties().subscribe({
-      next: (properties) => {
-        this.property = properties.find(p => p.id === id) || null;
+      next: (properties : any) => {
+      console.log('RESPOSTA DA API:', properties);
+      const list = properties.data;
+
+        this.property = list.find((p: Property) => p.id === id) || null;
         this.loading = false;
         if (!this.property) {
           this.error = true;

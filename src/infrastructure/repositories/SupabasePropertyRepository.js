@@ -139,8 +139,9 @@ class SupabasePropertyRepository extends IPropertyRepository {
         }
 
         const { data, count, error } = await query
-            .range(offset, offset + limit - 1)
-            .order('created_at', { ascending: false });
+            .order('featured', { ascending: false })
+            .order('created_at', { ascending: false })
+            .range(offset, offset + limit - 1);
 
         if (error) throw error;
 
@@ -157,6 +158,7 @@ class SupabasePropertyRepository extends IPropertyRepository {
             const { data, error } = await supabase
                 .from(this.tableName)
                 .select('*')
+                .order('featured', { ascending: false })
                 .order('created_at', { ascending: false });
 
             if (error) {

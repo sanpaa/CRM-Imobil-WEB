@@ -11,7 +11,8 @@ import { Property } from '../../models/property.model';
 })
 export class PropertyCardComponent {
   @Input() property!: Property;
-
+  images: string[] = [];
+  currentIndex = 0;
   getFirstImage(): string {
     const images = this.property.imageUrls || (this.property.imageUrl ? [this.property.imageUrl] : []);
     return images.length > 0 ? images[0] : 'https://picsum.photos/200';
@@ -52,5 +53,30 @@ export class PropertyCardComponent {
 
   onImageError(event: any): void {
     event.target.parentElement.innerHTML = '<i class="fas fa-image fa-3x"></i>';
+  }
+
+  ngOnInit() {
+    this.images =
+      this.property.imageUrls?.length
+        ? this.property.imageUrls
+        : this.property.imageUrl
+          ? [this.property.imageUrl]
+          : ['https://picsum.photos/600/400'];
+  }
+
+  get currentImage(): string {
+    return this.images[this.currentIndex];
+  }
+
+  nextImage(event: Event) {
+    event.stopPropagation();
+    this.currentIndex =
+      (this.currentIndex + 1) % this.images.length;
+  }
+
+  prevImage(event: Event) {
+    event.stopPropagation();
+    this.currentIndex =
+      (this.currentIndex - 1 + this.images.length) % this.images.length;
   }
 }
