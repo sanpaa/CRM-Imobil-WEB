@@ -1,78 +1,47 @@
-<!-- Search Hero -->
-<section class="search-hero">
+<!-- SEARCH HERO -->
+<section class="search-hero p-4">
   <div class="container">
-    <h1 class="text-light">Encontre o Imóvel Ideal</h1>
-    <p class="text-light" style="text-align: center; opacity: 0.95;">Use os filtros abaixo para buscar o imóvel perfeito para você</p>
+    <h1>Encontre o Imóvel Ideal</h1>
+    <p>Use os filtros para refinar sua busca</p>
   </div>
 </section>
 
-<!-- Search Container -->
-<div class="search-container">
-  <div class="container">
-<!-- Filters -->
-<div class="filters-section">
+<!-- SEARCH LAYOUT -->
+<div class="search-layout container mb-5" style="max-width: 1500px;">
+ 
+  <!-- FILTER SIDEBAR -->
+  <aside class="filters-sidebar">
 
-  <h2 class="filters-title">
-    <i class="fas fa-filter"></i> Filtros de Busca
-  </h2>
+    <h2><i class="fas fa-filter"></i> Filtros</h2>
 
-  <!-- Linha 1 – Busca livre -->
-  <div class="filters-row full">
-    <div class="filter-group search-with-icon">
-      <label>Busca Livre</label>
-
-      <div class="search-input-wrapper">
-        <input
-          type="text"
-          [(ngModel)]="filters.searchText"
-          (input)="applyFilters()"
-          placeholder="Digite título, descrição ou localização...">
-
-        <!-- ÍCONE DE FILTRO -->
-        <button
-          type="button"
-          class="filter-toggle-btn"
-          (click)="toggleFilters()"
-          [class.active]="showFilters">
-          <i class="fas fa-sliders-h"></i>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Linha 2 – Dropdowns -->
-   <div class="filters-collapse" [class.open]="showFilters">
-
-  <div class="filters-row">
+    <!-- Busca livre -->
     <div class="filter-group">
-      <label>Tipo de Imóvel</label>
+      <label>Busca livre</label>
+      <input
+        type="text"
+        [(ngModel)]="filters.searchText"
+        (input)="applyFilters()"
+        placeholder="Título, bairro, descrição..." />
+    </div>
+
+    <!-- Tipo -->
+    <div class="filter-group">
+      <label>Tipo</label>
       <app-custom-dropdown
-        label="{{ filters.type || 'Todos os tipos' }}"
+        label="{{ filters.type || 'Todos' }}"
         icon="fas fa-home"
         [value]="filters.type"
         [items]="[
-          { label: 'Todos os tipos', value: '' },
+          { label: 'Todos', value: '' },
           { label: 'Casa', value: 'Casa' },
           { label: 'Apartamento', value: 'Apartamento' },
-          { label: 'Terreno', value: 'Terreno' },
-          { label: 'Comercial', value: 'Comercial' },
-          { label: 'Rural', value: 'Rural' }
+          { label: 'Terreno', value: 'Terreno' }
         ]"
         (valueChange)="filters.type = $event; applyFilters()">
       </app-custom-dropdown>
     </div>
 
-    <div class="filter-group">
-      <label>Cidade</label>
-      <app-custom-dropdown
-        label="{{ filters.city || 'Todas as cidades' }}"
-        icon="fas fa-map-marker-alt"
-        [value]="filters.city"
-        [items]="citiesDropdownItems"
-        (valueChange)="onCityChange($event)">
-      </app-custom-dropdown>
-    </div>
-
+    <!-- Quartos -->
     <div class="filter-group">
       <label>Quartos</label>
       <app-custom-dropdown
@@ -83,165 +52,78 @@
           { label: 'Qualquer', value: undefined },
           { label: '1+', value: 1 },
           { label: '2+', value: 2 },
-          { label: '3+', value: 3 },
-          { label: '4+', value: 4 }
+          { label: '3+', value: 3 }
         ]"
         (valueChange)="filters.bedrooms = $event; applyFilters()">
       </app-custom-dropdown>
     </div>
-  </div>
 
-  <!-- Linha 3 – Preços -->
-  <div class="filters-row price-row">
+    <!-- Preço -->
     <div class="filter-group">
       <label>Preço mínimo</label>
-      <div class="price-input">
-        <span>R$</span>
-        <input
-          type="number"
-          min="0"
-          [(ngModel)]="filters.priceMin"
-          (input)="applyFilters()"
-          placeholder="0"
-          step="10000">
-      </div>
+      <input type="number" [(ngModel)]="filters.priceMin" (input)="applyFilters()" placeholder="R$ 0">
     </div>
 
     <div class="filter-group">
       <label>Preço máximo</label>
-      <div class="price-input">
-        <span>R$</span>
-        <input
-          type="number"
-          min="0"
-          [(ngModel)]="filters.priceMax"
-          (input)="applyFilters()"
-          placeholder="Sem limite"
-          step="10000">
-      </div>
+      <input type="number" [(ngModel)]="filters.priceMax" (input)="applyFilters()" placeholder="Sem limite">
     </div>
-  </div>
-  </div>
 
-  <!-- Linha 4 – Ações -->
-  <div class="filter-actions">
-    <button class="btn btn-primary" (click)="applyFilters()">
-      <i class="fas fa-search"></i> Buscar
-    </button>
+    <!-- Ações -->
+    <div class="filter-actions">
+      <button class="btn primary" (click)="applyFilters()">
+        <i class="fas fa-search"></i> Buscar
+      </button>
+      <button class="btn secondary" (click)="clearFilters()">
+        Limpar
+      </button>
+    </div>
 
-    <button class="btn btn-secondary" (click)="clearFilters()">
-      <i class="fas fa-times"></i> Limpar Filtros
-    </button>
-  </div>
+  </aside>
 
-</div>
+  <!-- RESULTS AREA -->
+  <main class="results-area">
 
-
-    <!-- Results Header -->
+    <!-- RESULTS HEADER -->
     <div class="results-header">
-      <div class="results-count">{{ resultsCount }}</div>
-      <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
-        <div class="view-toggle">
-          <button 
-            [class.active]="currentView === 'grid'" 
-            (click)="switchView('grid')">
-            <i class="fas fa-th"></i> Grade
-          </button>
-          <button 
-            [class.active]="currentView === 'map'" 
-            (click)="switchView('map')">
-            <i class="fas fa-map"></i> Mapa
-          </button>
-        </div>
-        
-        <!-- Custom Dropdown for Sorting -->
-        <app-custom-dropdown
-          label="{{ getSortLabel() }}"
-          icon="fas fa-sort-amount-down"
-          [value]="sortBy"
-          [items]="[
-            { label: 'Destaques primeiro', value: 'featured', icon: 'fas fa-star' },
-            { label: 'Menor preço', value: 'price-asc', icon: 'fas fa-arrow-up' },
-            { label: 'Maior preço', value: 'price-desc', icon: 'fas fa-arrow-down' },
-            { label: 'Mais recentes', value: 'newest', icon: 'fas fa-clock' }
-          ]"
-          (valueChange)="setSortBy($event)">
-        </app-custom-dropdown>
-        </div>
-    </div>
+      <span class="results-count">{{ resultsCount }}</span>
 
-    <!-- Map View -->
-    <div *ngIf="currentView === 'map'" class="map-container">
-      <!-- Loading indicator for map -->
-      <div *ngIf="mapLoading" class="map-loading-overlay">
-        <div class="spinner"></div>
-        <p>Carregando mapa...</p>
-      </div>
-      <div id="map" class="map-view"></div>
-    </div>
+      <div class="view-toggle">
+        <button
+          [class.active]="currentView === 'grid'"
+          (click)="switchView('grid')">
+          <i class="fas fa-th"></i>
+        </button>
 
-    <!-- Loading State -->
-    <div *ngIf="loading && currentView === 'grid'" class="properties-grid">
-      <div *ngFor="let i of [1,2,3,4,5,6]" class="skeleton-card">
-        <div class="skeleton skeleton-image"></div>
-        <div class="skeleton-content">
-          <div class="skeleton skeleton-line short"></div>
-          <div class="skeleton skeleton-line"></div>
-          <div class="skeleton skeleton-line"></div>
-          <div class="skeleton skeleton-line short"></div>
-        </div>
+        <button
+          [class.active]="currentView === 'map'"
+          (click)="switchView('map')">
+          <i class="fas fa-map"></i>
+        </button>
       </div>
     </div>
 
-    <!-- Results Grid -->
-    <div *ngIf="!loading && !error && displayedProperties.length > 0 && currentView === 'grid'" class="properties-grid">
-      <app-property-card *ngFor="let property of displayedProperties" [property]="property"></app-property-card>
+    <!-- MAP VIEW -->
+    <div *ngIf="currentView === 'map'" class="map-wrapper">
+      <div id="map"></div>
     </div>
 
-    <!-- No Results -->
-    <div *ngIf="!loading && !error && displayedProperties.length === 0 && currentView === 'grid'" class="no-results">
+    <!-- GRID VIEW -->
+    <div *ngIf="currentView === 'grid'" class="properties-grid">
+
+      <app-property-card
+        *ngFor="let property of displayedProperties"
+        [property]="property">
+      </app-property-card>
+
+    </div>
+
+    <!-- NO RESULTS -->
+    <div *ngIf="!loading && displayedProperties.length === 0" class="no-results">
       <i class="fas fa-search"></i>
       <h3>Nenhum imóvel encontrado</h3>
-      <p>Tente ajustar os filtros ou entre em contato para mais opções</p>
-      <a href="https://wa.me/5511999999999?text=Olá, estou procurando um imóvel" class="btn btn-primary" target="_blank">
-        <i class="fab fa-whatsapp"></i> Falar com Corretor
-      </a>
+      <p>Tente ajustar os filtros</p>
     </div>
 
-    <!-- Error State -->
-    <div *ngIf="error && currentView === 'grid'" class="no-results">
-      <i class="fas fa-exclamation-triangle"></i>
-      <h3>Erro ao carregar imóveis</h3>
-      <p>Por favor, tente novamente mais tarde ou entre em contato</p>
-      <button class="btn btn-primary" (click)="loadProperties()">
-        <i class="fas fa-redo"></i> Tentar Novamente
-      </button>
-    </div>
-
-    <!-- Pagination -->
-    <div *ngIf="!loading && !error && totalPages > 1 && currentView === 'grid'" class="pagination">
-      <button 
-        (click)="changePage(currentPage - 1)" 
-        [disabled]="currentPage === 1"
-        class="btn-pagination">
-        <i class="fas fa-chevron-left"></i> Anterior
-      </button>
-
-      <button 
-        *ngFor="let page of paginationPages" 
-        (click)="page > 0 ? changePage(page) : null"
-        [class.active]="page === currentPage"
-        [disabled]="page === -1"
-        class="btn-pagination">
-        {{ page > 0 ? page : '...' }}
-      </button>
-
-      <button 
-        (click)="changePage(currentPage + 1)" 
-        [disabled]="currentPage === totalPages"
-        class="btn-pagination">
-        Próxima <i class="fas fa-chevron-right"></i>
-      </button>
-    </div>
-  </div>
+  </main>
 </div>
