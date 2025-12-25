@@ -1,26 +1,29 @@
-<div class="property-detail-container">
+<div class="property-detail-page">
 
-  <!-- Loading -->
+  <!-- Loading State -->
   <div *ngIf="loading" class="state state-loading">
     <i class="fas fa-spinner fa-spin"></i>
-    <p>Carregando imóvel...</p>
+    <p>Carregando detalhes do imóvel...</p>
   </div>
 
-  <!-- Error -->
+  <!-- Error State -->
   <div *ngIf="error && !loading" class="state state-error">
     <i class="fas fa-exclamation-triangle"></i>
-    <h2>Imóvel não encontrado</h2>
-    <a routerLink="/" class="btn-primary">Voltar para Home</a>
+    <h2>Não foi possível carregar este imóvel</h2>
+    <a routerLink="/" class="btn btn-default">Voltar para Home</a>
   </div>
 
-  <!-- Content -->
-  <div *ngIf="property && !loading">
+  <!-- Property Content -->
+  <div *ngIf="!loading && property">
 
-    <a routerLink="/" class="back-button">
-      <i class="fas fa-arrow-left"></i> Voltar
-    </a>
+    <!-- Breadcrumb / Navegação -->
+    <nav class="breadcrumb">
+      <a routerLink="/">Início</a>
+      <span> / </span>
+      <span>{{ property.title }}</span>
+    </nav>
 
-    <!-- Header -->
+    <!-- Main Header -->
     <header class="property-header">
       <h1>{{ property.title }}</h1>
 
@@ -35,68 +38,126 @@
         <span *ngIf="property.sold" class="badge sold">Vendido</span>
         <span *ngIf="!property.sold" class="badge available">Disponível</span>
       </div>
+
+      <!-- Quick Info -->
+      <ul class="quick-info-list">
+        <li *ngIf="property.bedrooms">
+          <i class="fas fa-bed"></i> {{ property.bedrooms }} Quartos
+        </li>
+        <li *ngIf="property.bathrooms">
+          <i class="fas fa-bath"></i> {{ property.bathrooms }} Banheiros
+        </li>
+        <li *ngIf="property.area">
+          <i class="fas fa-ruler-combined"></i> {{ property.area }} m²
+        </li>
+        <li *ngIf="property.parking">
+          <i class="fas fa-car"></i> {{ property.parking }} Vagas
+        </li>
+      </ul>
     </header>
 
     <!-- Gallery -->
     <section *ngIf="images.length" class="gallery">
       <div class="gallery-main">
         <img [src]="currentImage" [alt]="property.title">
-
-        <button *ngIf="images.length > 1" class="nav prev" (click)="prevImage()">
+        <button *ngIf="images.length > 1" (click)="prevImage()" class="nav prev">
           <i class="fas fa-chevron-left"></i>
         </button>
-        <button *ngIf="images.length > 1" class="nav next" (click)="nextImage()">
+        <button *ngIf="images.length > 1" (click)="nextImage()" class="nav next">
           <i class="fas fa-chevron-right"></i>
         </button>
       </div>
-
       <div *ngIf="images.length > 1" class="thumbs">
-        <img
-          *ngFor="let img of images; let i = index"
+        <img *ngFor="let img of images; let i = index"
           [src]="img"
           [class.active]="i === currentImageIndex"
-          (click)="selectImage(i)"
-        />
+          (click)="selectImage(i)">
       </div>
     </section>
 
-    <!-- Grid -->
-    <div class="content-grid">
+    <div class="detail-content">
 
-      <!-- Main -->
+      <!-- MAIN INFO -->
       <main class="main-info">
-        <h2>Descrição</h2>
-        <p>{{ property.description || 'Sem descrição disponível.' }}</p>
 
-        <h2>Características</h2>
-        <div class="features">
-          <div *ngIf="property.type"><strong>Tipo</strong><span>{{ property.type }}</span></div>
-          <div *ngIf="property.bedrooms"><strong>Quartos</strong><span>{{ property.bedrooms }}</span></div>
-          <div *ngIf="property.bathrooms"><strong>Banheiros</strong><span>{{ property.bathrooms }}</span></div>
-          <div *ngIf="property.area"><strong>Área</strong><span>{{ property.area }} m²</span></div>
-          <div *ngIf="property.parking"><strong>Vagas</strong><span>{{ property.parking }}</span></div>
-        </div>
+        <!-- Summary Block (Inspirado em grandes portais) -->
+        <section class="summary-block">
+          <h2>Resumo do Imóvel</h2>
+          <div class="summary-grid">
+            <div *ngIf="property.area">
+              <strong>Área útil</strong>
+              <span>{{ property.area }} m²</span>
+            </div>
+            <div *ngIf="property.bedrooms">
+              <strong>Quartos</strong>
+              <span>{{ property.bedrooms }}</span>
+            </div>
+            <div *ngIf="property.bathrooms">
+              <strong>Banheiros</strong>
+              <span>{{ property.bathrooms }}</span>
+            </div>
+            <div *ngIf="property.parking">
+              <strong>Vagas</strong>
+              <span>{{ property.parking }}</span>
+            </div>
+            <div *ngIf="property.condoFee">
+              <strong>Condomínio</strong>
+              <span>R$ {{ property.condoFee | number:'1.0-0' }}</span>
+            </div>
+            <div *ngIf="property.iptu">
+              <strong>IPTU</strong>
+              <span>R$ {{ property.iptu | number:'1.0-0' }}</span>
+            </div>
+          </div>
+        </section>
 
-        <div *ngIf="property.latitude && property.longitude" class="map-section">
+        <!-- Description -->
+        <section class="description-section">
+          <h2>Descrição</h2>
+          <p>{{ property.description || 'Sem descrição disponível.' }}</p>
+        </section>
+
+        <!-- Amenities / Facilidades -->
+        <section *ngIf="property.amenities?.length" class="amenities-section">
+          <h2>Facilidades e Lazer</h2>
+          <ul class="amenities-list">
+            <li *ngFor="let a of property.amenities">
+              <i class="fas fa-check-circle"></i> {{ a }}
+            </li>
+          </ul>
+        </section>
+
+        <!-- Location Map -->
+        <section *ngIf="property.latitude && property.longitude" class="map-section">
           <h2>Localização</h2>
           <div id="property-map" class="map"></div>
-          <a [href]="getMapsLink()" target="_blank" class="btn-secondary">
+          <a [href]="getMapsLink()" target="_blank" class="btn btn-secondary">
             Abrir no Google Maps
           </a>
-        </div>
+        </section>
+
       </main>
 
-      <!-- Sidebar -->
+      <!-- SIDEBAR -->
       <aside class="sidebar">
-        <div class="contact-box">
-          <h3>Fale com a Imobiliária</h3>
-          <a [href]="getWhatsAppLink()" target="_blank" class="btn-whatsapp">
-            <i class="fab fa-whatsapp"></i> WhatsApp
+
+        <div class="contact-fixed-box">
+          <h3>Interessado neste imóvel?</h3>
+          <p>Fale com um corretor agora mesmo:</p>
+          <a [href]="getWhatsAppLink()" target="_blank" class="btn btn-whatsapp">
+            <i class="fab fa-whatsapp"></i> Agendar visita
           </a>
-          <small>Atendimento rápido e seguro</small>
+
+          <ul class="trust-features">
+            <li><i class="fas fa-check"></i> Documentação verificada</li>
+            <li><i class="fas fa-check"></i> Atendimento personalizado</li>
+            <li><i class="fas fa-check"></i> Sem compromisso</li>
+          </ul>
         </div>
+
       </aside>
 
     </div>
+
   </div>
 </div>

@@ -1,4 +1,7 @@
 /* Modern Real Estate Website Styles - Alancarmo Corretor */
+@import "swiper/css";
+@import "swiper/css/navigation";
+@import "swiper/css/pagination";
 
 /* Cores da Marca - Manual Alan Carmo */
 :root {

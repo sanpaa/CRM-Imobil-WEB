@@ -71,10 +71,15 @@ class SupabasePropertyRepository extends IPropertyRepository {
             description: row.description,
             type: row.type,
             price: row.price,
+            condoFee: row.condo_fee,
+            iptu: row.iptu,
             bedrooms: row.bedrooms,
             bathrooms: row.bathrooms,
             area: row.area,
             parking: row.parking,
+            floor: row.floor,
+            furnished: row.furnished,
+            status: row.status,
             imageUrl: row.image_url,
             imageUrls: row.image_urls || [],
             street: row.street,
@@ -90,7 +95,8 @@ class SupabasePropertyRepository extends IPropertyRepository {
             createdAt: row.created_at,
             updatedAt: row.updated_at
         });
-    }
+        }
+
 
     /**
      * Map Property entity to database row
@@ -101,10 +107,15 @@ class SupabasePropertyRepository extends IPropertyRepository {
             description: property.description,
             type: property.type,
             price: property.price,
+            condo_fee: property.condoFee,
+            iptu: property.iptu,
             bedrooms: property.bedrooms,
             bathrooms: property.bathrooms,
             area: property.area,
             parking: property.parking,
+            floor: property.floor,
+            furnished: property.furnished,
+            status: property.status,
             image_url: property.imageUrl,
             image_urls: property.imageUrls,
             street: property.street,
@@ -118,7 +129,7 @@ class SupabasePropertyRepository extends IPropertyRepository {
             featured: property.featured,
             sold: property.sold
         };
-    }
+        }
 
 
     async findPaginated(filters, limit, offset) {
@@ -260,6 +271,12 @@ class SupabasePropertyRepository extends IPropertyRepository {
             if (propertyData.contact !== undefined) updateData.contact = propertyData.contact;
             if (propertyData.featured !== undefined) updateData.featured = propertyData.featured;
             if (propertyData.sold !== undefined) updateData.sold = propertyData.sold;
+            if (propertyData.condoFee !== undefined) updateData.condo_fee = propertyData.condoFee;
+            if (propertyData.iptu !== undefined) updateData.iptu = propertyData.iptu;
+            if (propertyData.floor !== undefined) updateData.floor = propertyData.floor;
+            if (propertyData.furnished !== undefined) updateData.furnished = propertyData.furnished;
+            if (propertyData.status !== undefined) updateData.status = propertyData.status;
+
 
             const { data, error } = await supabase
                 .from(this.tableName)

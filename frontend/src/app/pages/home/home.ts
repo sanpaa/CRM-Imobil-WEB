@@ -103,6 +103,7 @@
 
 // }
 
+/// <reference types="swiper/element" />
 
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -110,11 +111,14 @@ import { RouterModule, Router } from '@angular/router'; // Adicionado Router aqu
 import { PropertyCardComponent } from '../../components/property-card/property-card';
 import { PropertyService } from '../../services/property';
 import { Property } from '../../models/property.model';
-import { Component, OnInit } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit, ViewChild } from '@angular/core';
+import { register } from 'swiper/element/bundle';
+register();
 
 @Component({
   selector: 'app-home',
   standalone: true, // Se estiver usando Angular moderno
+  schemas: [CUSTOM_ELEMENTS_SCHEMA], 
   imports: [CommonModule, RouterModule, PropertyCardComponent, FormsModule],
   templateUrl: './home.html',
   styleUrl: './home.css',
@@ -130,6 +134,7 @@ export class HomeComponent implements OnInit {
   pageSize = 3;
   currentIndex = 0;
   isMobile = false;
+  @ViewChild('swiperRef', { static: false }) swiper?: any;
 
   // Adicionado o Router no construtor
   constructor(
@@ -169,7 +174,6 @@ export class HomeComponent implements OnInit {
       next: (properties : any) => {
       console.log('RESPOSTA DA API:', properties);
       const list = properties.data;
-
         this.properties = list
           .filter((p: Property) => !p.sold)
           .slice(0, 9);
@@ -221,6 +225,15 @@ export class HomeComponent implements OnInit {
     }
   });
 }
+
+swiperNext(): void {
+  this.swiper?.nativeElement.swiper.slideNext();
+}
+
+swiperPrev(): void {
+  this.swiper?.nativeElement.swiper.slidePrev();
+}
+
 
 
 }

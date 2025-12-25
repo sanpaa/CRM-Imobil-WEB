@@ -1,3 +1,15 @@
+<!-- tag google analytics -->
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-V86M0B59F2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() { dataLayer.push(arguments); }
+  gtag('js', new Date());
+
+  gtag('config', 'G-V86M0B59F2');
+</script>
+
+
 <section class="hero" id="inicio">
   <div class="hero-overlay"></div>
 
@@ -12,12 +24,8 @@
 
     <div class="search-box-container">
       <div class="search-main">
-        <input
-          type="text"
-          [(ngModel)]="searchText"
-          (keyup.enter)="goToSearch()"
-          placeholder="Busque por bairro, cidade, nome do imóvel ou característica..."
-        />
+        <input type="text" [(ngModel)]="searchText" (keyup.enter)="goToSearch()"
+          placeholder="Busque por bairro, cidade, nome do imóvel ou característica..." />
         <button class="btn-search-icon">
           <i class="fas fa-search"></i>
         </button>
@@ -84,17 +92,19 @@
       </div>
     </div>
 
-    <div *ngIf="!loading && properties.length > 0" class="carousel-container">
-    <button class="carousel-btn left" (click)="prev()" [disabled]="currentIndex === 0">‹</button>      
-      <div class="properties-grid">
-        <app-property-card 
-          *ngFor="let property of visibleProperties" 
-          [property]="property"
-          class="fade-in-up">
-        </app-property-card>
-      </div>
-
-      <button class="carousel-btn right" (click)="next()" [disabled]="currentIndex + pageSize >= properties.length">›</button>
+    <swiper-container #swiperRef class="property-swiper" [attr.slides-per-view]="isMobile ? 1.1 : 3" space-between="24"
+      [attr.pagination]="isMobile ? '' : null">
+      <swiper-slide *ngFor="let property of properties">
+        <app-property-card [property]="property"></app-property-card>
+      </swiper-slide>
+    </swiper-container>
+    <div class="carousel-nav" style="margin-left: auto; margin-right: auto; justify-content: center; margin-top: 2rem;" *ngIf="!isMobile">
+      <button class="nav-btn prev" (click)="swiperPrev()">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <button class="nav-btn next" (click)="swiperNext()">
+        <i class="fas fa-chevron-right"></i>
+      </button>
     </div>
   </div>
 </section>
@@ -108,11 +118,7 @@
 
   <p style="margin-left: 1rem;">Olá! Posso te ajudar a encontrar o imóvel ideal em Pouso Alegre?</p>
 
-  <a
-    class="wa-btn"
-    href="https://wa.me/5535997383030"
-    target="_blank"
-  >
+  <a class="wa-btn" href="https://wa.me/5535997383030" target="_blank">
     <i class="fab fa-whatsapp"></i>
     Chamar no WhatsApp
   </a>
