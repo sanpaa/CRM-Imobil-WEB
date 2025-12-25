@@ -4,6 +4,8 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { PropertyService } from '../../services/property';
 import { Property } from '../../models/property.model';
 import * as L from 'leaflet';
+import { Location } from '@angular/common';
+import { Router } from '@angular/router';
 
 // Fix Leaflet's default icon path issue with webpack
 const iconRetinaUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png';
@@ -36,7 +38,10 @@ export class PropertyDetailsComponent implements OnInit, AfterViewInit {
 
   constructor(
     private route: ActivatedRoute,
-    private propertyService: PropertyService
+    private propertyService: PropertyService,
+    private location: Location,
+    private router: Router
+
   ) {}
 
   ngOnInit(): void {
@@ -52,6 +57,17 @@ export class PropertyDetailsComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     // Map will be initialized after property loads
   }
+
+  goBack() {
+    // Se houver histórico de navegação, volta
+    if (window.history.length > 1) {
+      this.location.back();
+    } else {
+      // Se entrou direto no link
+      this.router.navigate(['/']);
+    }
+  }
+
 
   loadProperty(id: string): void {
     this.loading = true;

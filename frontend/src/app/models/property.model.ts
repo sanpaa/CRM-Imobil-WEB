@@ -1,6 +1,5 @@
 export interface Property {
   id: string;
-
   title: string;
   description: string;
   type: string;
@@ -11,24 +10,21 @@ export interface Property {
   area?: number;
   parking?: number;
 
-  // NOVO
-  amenities?: string[]; // <-- ESSENCIAL
-
-  condoFee?: number;
-  iptu?: number;
+  // 🔥 NOVOS CAMPOS
+  condoFee?: number;   // valor condomínio
+  iptu?: number;       // IPTU anual
+  condoIncludes?: string; // ex: Água, gás, portaria
 
   imageUrl?: string;
   imageUrls?: string[];
 
-  // UX
   location?: string;
-
-  // Endereço
   street?: string;
   neighborhood?: string;
   city?: string;
   state?: string;
   zipCode?: string;
+
   latitude?: number;
   longitude?: number;
 

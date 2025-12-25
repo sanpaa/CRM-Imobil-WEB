@@ -8,6 +8,8 @@
   /* Cores Principais da Marca */
   --brand-blue: #0B2E4D;
   --brand-orange: #FF6B00;
+  --brand-green: #25d366;
+  --brand-green-light: #67d690;
   --brand-blue-light: #0066CC;
   --brand-orange-light: #FF8533;
   
@@ -140,14 +142,14 @@ h4, h5, h6 {
 /* Botões com Laranja para Ações de Destaque */
 .btn-whatsapp,
 .btn-contact {
-  background: linear-gradient(135deg, var(--brand-orange), var(--brand-orange-light)) !important;
+  background: linear-gradient(135deg, var(--brand-green), var(--brand-green)) !important;
   border: none !important;
   color: white !important;
 }
 
 .btn-whatsapp:hover,
 .btn-contact:hover {
-  background: linear-gradient(135deg, var(--brand-orange-light), var(--brand-orange)) !important;
+  background: linear-gradient(135deg, var(--brand-green-light), var(--brand-green)) !important;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(255, 107, 0, 0.3) !important;
 }

@@ -1,6 +1,6 @@
 .property-detail-container {
   max-width: 1200px;
-  margin: 100px auto;
+  margin: 40px auto;
   padding: 0 20px;
   font-family: 'Montserrat', Arial, sans-serif;
 }
@@ -11,18 +11,18 @@
 }
 
 .back-button {
-  display: inline-flex;
+  /* display: inline-flex; */
   gap: 8px;
   margin-bottom: 20px;
   text-decoration: none;
   color: var(--primary-color);
   font-weight: 500;
+  cursor: pointer;
 }
 
 /* HEADER */
 .property-header {
   background: #fff;
-  padding: 30px;
   border-radius: 12px;
   margin-bottom: 30px;
 }
@@ -78,7 +78,7 @@
   background: #fff;
   border-radius: 12px;
   overflow: hidden;
-  margin-bottom: 30px;
+  padding: 10px;
 }
 
 .gallery-main {
@@ -138,7 +138,7 @@
 /* MAIN */
 .main-info {
   background: #fff;
-  padding: 30px;
+  padding-top: 30px;
   border-radius: 12px;
 }
 
@@ -149,7 +149,7 @@
 /* IDEAL */
 .ideal-for {
   background: #f8f9fb;
-  padding: 20px;
+  padding: 0px;
   border-radius: 8px;
   margin-bottom: 25px;
 }

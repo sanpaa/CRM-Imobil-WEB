@@ -10,13 +10,15 @@
   <div *ngIf="error && !loading" class="state state-error">
     <i class="fas fa-exclamation-triangle"></i>
     <h2>Imóvel não encontrado</h2>
-    <a routerLink="/" class="btn-primary">Voltar para Home</a>
+    <button class="btn-primary" (click)="goBack()">
+      Voltar
+    </button>
   </div>
 
   <!-- Content -->
   <div *ngIf="property && !loading">
 
-    <a routerLink="/" class="back-button">
+    <a class="back-button" (click)="goBack()">
       <i class="fas fa-arrow-left"></i> Voltar
     </a>
 
@@ -25,6 +27,15 @@
       <h1>{{ property.title }}</h1>
 
       <div class="price">R$ {{ formatPrice(property.price) }}</div>
+      <div class="extra-costs" *ngIf="property.condoFee || property.iptu">
+        <span class="price" style="font-size: .8rem;" *ngIf="property.condoFee">
+          Condomínio: R$ {{ formatPrice(property.condoFee) }}
+        </span>
+        <br>
+        <span class="price" style="font-size: .8rem;" *ngIf="property.iptu">
+          IPTU anual: R$ {{ formatPrice(property.iptu) }}
+        </span>
+      </div>
 
       <div class="location">
         <i class="fas fa-map-marker-alt"></i> {{ getLocation() }}
@@ -86,11 +97,11 @@
 
         <h2>Características</h2>
         <div class="features">
-          <div *ngIf="property.type"><strong>Tipo</strong><span>{{ property.type }}</span></div>
-          <div *ngIf="property.bedrooms"><strong>Quartos</strong><span>{{ property.bedrooms }}</span></div>
-          <div *ngIf="property.bathrooms"><strong>Banheiros</strong><span>{{ property.bathrooms }}</span></div>
-          <div *ngIf="property.area"><strong>Área</strong><span>{{ property.area }} m²</span></div>
-          <div *ngIf="property.parking"><strong>Vagas</strong><span>{{ property.parking }}</span></div>
+          <div *ngIf="property.type"><strong>Tipo do imovel</strong><br><span>{{ property.type }}</span></div>
+          <div *ngIf="property.bedrooms"><strong>Quartos</strong><br><span>{{ property.bedrooms }}</span></div>
+          <div *ngIf="property.bathrooms"><strong>Banheiros</strong><br><span>{{ property.bathrooms }}</span></div>
+          <div *ngIf="property.area"><strong>Área</strong><br><span>{{ property.area }} m²</span></div>
+          <div *ngIf="property.parking"><strong>Vagas</strong><br><span>{{ property.parking }}</span></div>
         </div>
 
         <div *ngIf="property.latitude && property.longitude" class="map-section">
