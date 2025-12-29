@@ -56,7 +56,7 @@
     </header>
 
     <!-- GALLERY -->
-    <section *ngIf="images.length" class="gallery">
+    <!-- <section *ngIf="images.length" class="gallery">
       <div class="gallery-main">
         <img [src]="currentImage" [alt]="property.title">
 
@@ -76,7 +76,46 @@
           (click)="selectImage(i)"
         />
       </div>
-    </section>
+    </section> -->
+
+  <div class="property-gallery" *ngIf="images?.length">
+
+    <!-- SWIPER PRINCIPAL -->
+    <swiper-container
+      #gallerySwiper
+      class="property-gallery-swiper"
+      slides-per-view="1"
+      space-between="16"
+      loop="false"
+      (swiperslidechange)="onSlideChange()"
+    >
+      <swiper-slide *ngFor="let img of images; let i = index">
+        <div class="image-wrapper">
+          <img
+            [src]="img"
+            class="gallery-image"
+            alt="Imagem do imóvel"
+            (click)="openImageViewer(img)"
+          />
+          <div class="zoom-overlay">
+            <i class="fas fa-search-plus"></i>
+          </div>
+        </div>
+      </swiper-slide>
+    </swiper-container>
+
+
+    <!-- THUMBS (IGUAL ANTES) -->
+    <div class="thumbs" *ngIf="images.length > 1">
+      <img
+        *ngFor="let img of images; let i = index"
+        [src]="img"
+        [class.active]="i === currentImageIndex"
+        (click)="goToSlide(i)"
+      />
+    </div>
+
+  </div>
 
     <!-- GRID -->
     <div class="content-grid">
@@ -134,8 +173,36 @@
             <li><i class="fas fa-check"></i> Sem compromisso</li>
           </ul>
         </div>
+        <div class="quick-actions">
+          <button class="action-btn whatsapp" (click)="shareWhatsApp()">
+            <i class="fab fa-whatsapp"></i>
+            <span>WhatsApp</span>
+          </button>
+          
+          
+          <button class="action-btn share" (click)="shareProperty()">
+            <i class="fas fa-share-alt"></i>
+            <span>Compartilhar</span>
+          </button>
+        </div>
+
       </aside>
 
     </div>
   </div>
+</div>
+
+
+<div
+  class="image-viewer"
+  *ngIf="isImageViewerOpen"
+  (click)="closeImageViewer()"
+>
+  <img
+    class="viewer-image"
+    [src]="viewerImage"
+    (click)="$event.stopPropagation()"
+  />
+
+  <button class="close-btn" (click)="closeImageViewer()">×</button>
 </div>

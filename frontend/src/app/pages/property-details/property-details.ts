@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, CUSTOM_ELEMENTS_SCHEMA, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { PropertyService } from '../../services/property';
@@ -28,6 +28,7 @@ L.Marker.prototype.options.icon = iconDefault;
   imports: [CommonModule, RouterModule],
   templateUrl: './property-details.html',
   styleUrl: './property-details.css',
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class PropertyDetailsComponent implements OnInit, AfterViewInit {
   property: Property | null = null;
@@ -35,6 +36,12 @@ export class PropertyDetailsComponent implements OnInit, AfterViewInit {
   error = false;
   currentImageIndex = 0;
   private map: L.Map | null = null;
+  @ViewChild('gallerySwiper') gallerySwiper!: ElementRef;
+  isImageViewerOpen = false;
+  viewerImage = '';
+  linkCopied = false;
+
+  isMobile = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -42,9 +49,11 @@ export class PropertyDetailsComponent implements OnInit, AfterViewInit {
     private location: Location,
     private router: Router
 
-  ) {}
+  ) { }
 
   ngOnInit(): void {
+    this.checkIfMobile();
+
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.loadProperty(id);
@@ -58,6 +67,11 @@ export class PropertyDetailsComponent implements OnInit, AfterViewInit {
     // Map will be initialized after property loads
   }
 
+  checkIfMobile(): void {
+    this.isMobile = window.innerWidth < 768;
+  }
+
+
   goBack() {
     // Se houver histórico de navegação, volta
     if (window.history.length > 1) {
@@ -68,13 +82,115 @@ export class PropertyDetailsComponent implements OnInit, AfterViewInit {
     }
   }
 
+  openImageViewer(img: string) {
+    this.viewerImage = img;
+    this.isImageViewerOpen = true;
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeImageViewer() {
+    this.isImageViewerOpen = false;
+    this.viewerImage = '';
+    document.body.style.overflow = '';
+  }
+
+
+  galleryPrev() {
+    this.gallerySwiper.nativeElement.swiper.slidePrev();
+  }
+
+  galleryNext() {
+    this.gallerySwiper.nativeElement.swiper.slideNext();
+  }
+
+  goToSlide(index: number) {
+    this.currentImageIndex = index;
+    this.gallerySwiper.nativeElement.swiper.slideTo(index);
+    this.scrollThumbIntoView(index);
+  }
+
+  onSlideChange() {
+    if (this.gallerySwiper?.nativeElement?.swiper) {
+      const swiper = this.gallerySwiper.nativeElement.swiper;
+      this.currentImageIndex = swiper.activeIndex;
+      this.scrollThumbIntoView(swiper.activeIndex);
+    }
+  }
+
+  shareWhatsApp() {
+    const text = `Olá! Gostaria de mais informações sobre ${this.property?.title}`;
+    const url = encodeURIComponent(window.location.href);
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}%0A${url}`, '_blank');
+  }
+
+  
+  copyLink() {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+      this.linkCopied = true;
+      setTimeout(() => {
+        this.linkCopied = false;
+      }, 2000);
+    });
+  }
+
+  async shareProperty() {
+    const shareData = {
+      title: this.property?.title || 'Imóvel',
+      text: `Confira este imóvel: ${this.property?.title}`,
+      url: window.location.href
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.log('Erro ao compartilhar:', err);
+      }
+    } else {
+      // Fallback: copia o link
+      this.copyLink();
+    }
+  }
+
+
+
+  private scrollThumbIntoView(index: number) {
+    setTimeout(() => {
+      const thumbsContainer = document.querySelector('.thumbs');
+      const activeThumb = thumbsContainer?.querySelectorAll('img')[index];
+
+      if (thumbsContainer && activeThumb) {
+        const thumbRect = (activeThumb as HTMLElement).getBoundingClientRect();
+        const containerRect = thumbsContainer.getBoundingClientRect();
+
+        const scrollLeft = (activeThumb as HTMLElement).offsetLeft -
+          (containerRect.width / 2) +
+          (thumbRect.width / 2);
+
+        thumbsContainer.scrollTo({
+          left: scrollLeft,
+          behavior: 'smooth'
+        });
+      }
+    }, 100);
+  }
+
+
+  @HostListener('document:keydown.escape')
+  onEsc() {
+    if (this.isImageViewerOpen) {
+      this.closeImageViewer();
+    }
+  }
+
 
   loadProperty(id: string): void {
     this.loading = true;
     this.propertyService.getAllProperties().subscribe({
-      next: (properties : any) => {
-      console.log('RESPOSTA DA API:', properties);
-      const list = properties.data;
+      next: (properties: any) => {
+        // console.log('RESPOSTA DA API:', properties);
+        const list = properties.data;
 
         this.property = list.find((p: Property) => p.id === id) || null;
         this.loading = false;

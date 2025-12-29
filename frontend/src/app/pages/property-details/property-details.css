@@ -5,10 +5,78 @@
   font-family: 'Montserrat', Arial, sans-serif;
 }
 
+/* .state {
+  text-align: center;
+  padding: 4rem;
+} */
 .state {
   text-align: center;
   padding: 4rem;
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease-in;
 }
+
+.state-loading i {
+  font-size: 3rem;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+  animation: spin 1s linear infinite;
+}
+
+.state-loading p {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.state-error i {
+  font-size: 3rem;
+  color: #dc3545;
+  margin-bottom: 1rem;
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-10px);
+  }
+  75% {
+    transform: translateX(10px);
+  }
+}
+
 
 .back-button {
   /* display: inline-flex; */
@@ -19,6 +87,46 @@
   font-weight: 500;
   cursor: pointer;
 }
+
+
+state-error i {
+  font-size: 3rem;
+  color: #dc3545;
+  margin-bottom: 1rem;
+  animation: shake 0.5s ease-in-out;
+}
+
+.state-error h2 {
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+.state-error .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--primary-color);
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.state-error .btn-primary:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.state-error .btn-primary:active {
+  transform: translateY(0);
+}
+
 
 /* HEADER */
 .property-header {
@@ -187,7 +295,7 @@
 
 .contact-box {
   background: #fff;
-  padding: 25px;
+  padding: 25px 25px 5px;
   border-radius: 12px;
   text-align: center;
 }
@@ -234,5 +342,259 @@
 
   .gallery-main {
     height: 300px;
+  }
+}
+
+
+.property-gallery {
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+.property-gallery-swiper {
+  width: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.gallery-image {
+  width: 100%;
+  height: 420px;
+  object-fit: cover;
+  border-radius: 14px;
+}
+
+@media (max-width: 768px) {
+  .gallery-image {
+    height: 260px;
+  }
+}
+
+.image-viewer {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.95);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-viewer img {
+  max-width: 95vw;
+  max-height: 90vh;
+  object-fit: contain;
+}
+
+.close-btn {
+  position: absolute;
+  top: 20px;
+  right: 25px;
+  font-size: 32px;
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+}
+
+
+.zoom-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 16px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.image-wrapper:hover .zoom-overlay {
+  opacity: 1;
+}
+
+.zoom-overlay i {
+  color: white;
+  font-size: 1.5rem;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 12px;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.image-wrapper:hover .zoom-overlay i {
+  transform: scale(1.1);
+}
+
+/* THUMBS - corrigir overflow e scroll automático */
+.thumbs {
+  display: flex;
+  gap: 10px;
+  padding: 15px 20px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-color) #f0f0f0;
+  scroll-behavior: smooth;
+  scroll-snap-type: x proximity;
+}
+
+
+.thumbs::-webkit-scrollbar {
+  height: 6px;
+}
+
+.thumbs::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 3px;
+}
+
+.thumbs img {
+  min-width: 100px;
+  width: 100px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 6px;
+  opacity: .6;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.3s ease;
+}
+
+.thumbs img.active {
+  opacity: 1;
+  outline: 3px solid var(--primary-color);
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .image-wrapper {
+    height: 260px;
+  }
+  
+  .zoom-overlay {
+    opacity: 1;
+    padding: 12px;
+  }
+  
+  .zoom-overlay i {
+    width: 40px;
+    height: 40px;
+    font-size: 1.3rem;
+    padding: 10px;
+  }
+  
+  .thumbs {
+    padding: 15px 15px;
+  }
+  
+  .thumbs img {
+    min-width: 80px;
+    width: 80px;
+    height: 60px;
+  }
+}
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin: 0 25px 30px 25px;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 8px;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #fff;
+  color: #333;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.action-btn span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.action-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.action-btn:active {
+  transform: translateY(-1px);
+}
+
+.action-btn i {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.action-btn.whatsapp {
+  background: #25d366;
+  color: white;
+}
+
+.action-btn.whatsapp:hover {
+  background: #20ba5a;
+}
+
+.action-btn.copy {
+  background: #6c757d;
+  color: white;
+}
+
+.action-btn.copy:hover {
+  background: #5a6268;
+}
+
+.action-btn.share {
+  background: #007bff;
+  color: white;
+}
+
+.action-btn.share:hover {
+  background: #0056b3;
+}
+
+@media (max-width: 768px) {
+  .quick-actions {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin: 0 15px 20px 15px;
+  }
+  
+  .action-btn {
+    padding: 12px 8px;
+    font-size: 0.85rem;
+    gap: 6px;
+  }
+  
+  .action-btn span {
+    font-size: 0.8rem;
+  }
+  
+  .action-btn i {
+    font-size: 1rem;
   }
 }
