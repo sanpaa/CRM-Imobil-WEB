@@ -11,11 +11,6 @@
 
 // Load environment variables from .env file
 require('dotenv').config();
-const { SupabasePropertyRepository, SupabaseStoreSettingsRepository, SupabaseUserRepository } = require('./src/infrastructure/repositories');
-const { PropertyService, StoreSettingsService, UserService } = require('./src/application/services');
-const { createPropertyRoutes, createStoreSettingsRoutes, createUserRoutes, createAuthRoutes, createUploadRoutes } = require('./src/presentation/routes');
-const createAuthMiddleware = require('./src/presentation/middleware/authMiddleware');
-const { SupabaseStorageService } = require('./src/infrastructure/storage');
 
 const express = require('express');
 const cors = require('cors');
@@ -23,7 +18,6 @@ const path = require('path');
 const fs = require('fs');
 const rateLimit = require('express-rate-limit');
 const axios = require('axios');
-const multer = require('multer');
 const { hasValidSupabaseCredentials } = require('./src/utils/envUtils');
 const { geocodeAddress } = require('./src/utils/geocodingUtils');
 
@@ -33,7 +27,7 @@ const GEOCODING_RETRY_DELAY_MS = 1000; // Delay between geocoding retry attempts
 // Import Onion Architecture components
 const { SupabasePropertyRepository, SupabaseStoreSettingsRepository, SupabaseUserRepository } = require('./src/infrastructure/repositories');
 const { PropertyService, StoreSettingsService, UserService } = require('./src/application/services');
-const { createPropertyRoutes, createStoreSettingsRoutes, createUserRoutes, createAuthRoutes } = require('./src/presentation/routes');
+const { createPropertyRoutes, createStoreSettingsRoutes, createUserRoutes, createAuthRoutes, createUploadRoutes } = require('./src/presentation/routes');
 const createAuthMiddleware = require('./src/presentation/middleware/authMiddleware');
 const { SupabaseStorageService } = require('./src/infrastructure/storage');
 
@@ -50,7 +44,6 @@ const angularBuildExists = fs.existsSync(angularIndexPath);
 if (!angularBuildExists) {
     console.log('💡 Dica: Execute "npm run build:prod" para compilar o frontend Angular');
 }
-
 
 // Rate limiting for API endpoints
 const apiLimiter = rateLimit({
@@ -85,8 +78,6 @@ app.use('/admin-legacy', express.static(path.join(__dirname, 'admin'), {
         }
     }
 }));
-
-// Note: Local upload directory removed - images are stored in Supabase Storage
 
 // ============================================
 // Initialize Onion Architecture Dependencies
@@ -135,7 +126,7 @@ app.use('/api/users', createUserRoutes(userService, authMiddleware));
 // Authentication routes
 app.use('/api/auth', createAuthRoutes(userService));
 
-// Image upload endpoint - uploads to Supabase Storage
+// Upload routes (handles image uploads to Supabase Storage)
 app.use('/api/upload', createUploadRoutes(storageService));
 
 // AI Suggestions endpoint  
@@ -280,7 +271,6 @@ app.get('/api/cep/:cep', async (req, res) => {
             neighborhood: response.data.bairro,
             city: response.data.localidade,
             state: response.data.uf,
-            // Nominatim uses a simpler geocoding format
             address: `${response.data.logradouro}, ${response.data.bairro}, ${response.data.localidade}, ${response.data.uf}, Brasil`
         });
     } catch (error) {
@@ -300,30 +290,22 @@ app.post('/api/geocode', async (req, res) => {
         
         console.log('🗺️ Geocoding request for:', address);
         
-        // Try geocoding with the full address first
         let coords = await geocodeAddress(address);
         
-        // If that fails, try parsing and using fallback strategies
         if (!coords) {
-            // Parse the address to extract components
             const parts = address.split(',').map(p => p.trim());
-            
-            // Try different combinations
             const strategies = [];
             
-            // Try without the first part (street)
             if (parts.length > 2) {
                 strategies.push(parts.slice(1).join(', '));
             }
             
-            // Try just city, state, Brasil
             if (parts.length >= 3) {
                 const cityPart = parts[parts.length - 3];
                 const statePart = parts[parts.length - 2];
                 strategies.push(`${cityPart}, ${statePart}, Brasil`);
             }
             
-            // Try each strategy
             for (const strategyAddress of strategies) {
                 console.log('🗺️ Trying fallback geocoding:', strategyAddress);
                 coords = await geocodeAddress(strategyAddress);
@@ -331,7 +313,6 @@ app.post('/api/geocode', async (req, res) => {
                     console.log('✅ Fallback geocoding succeeded');
                     break;
                 }
-                // Add delay to respect rate limits
                 await new Promise(resolve => setTimeout(resolve, GEOCODING_RETRY_DELAY_MS));
             }
         }
@@ -354,7 +335,6 @@ app.use((req, res) => {
     if (angularBuildExists) {
         res.sendFile(angularIndexPath);
     } else {
-        // Angular app not built - provide helpful error message
         res.status(503).send(`
             <html>
                 <head><title>Build Required</title></head>
@@ -376,10 +356,7 @@ app.use((req, res) => {
 // Start server
 async function startServer() {
     try {
-        // Initialize default admin user in database (silent in offline mode)
         await userService.initializeDefaultAdmin();
-        
-        // Initialize default store settings (silent in offline mode)
         await storeSettingsService.initializeSettings({
             name: 'CRM Imobiliária',
             description: 'Sua imobiliária de confiança'
@@ -392,7 +369,6 @@ async function startServer() {
             console.log(`✅ Servidor rodando em http://localhost:${PORT}`);
             console.log('');
             
-            // Check environment configuration
             const hasSupabase = hasValidSupabaseCredentials(
                 process.env.SUPABASE_URL,
                 process.env.SUPABASE_KEY
