@@ -18,6 +18,13 @@ export class PropertyService {
     return this.http.get<Property[]>(this.apiUrl);
   }
 
+  getPropertiesByCompany(companyId: string | null): Observable<Property[]> {
+    if (!companyId) {
+      return this.getAllProperties();
+    }
+    return this.http.get<Property[]>(`${this.apiUrl}?company_id=${companyId}`);
+  }
+
   getProperties(
     filters: PropertyFilters,
     page = 1,

@@ -56,7 +56,7 @@ export class ModularHomeComponent implements OnInit {
   loadDefaultLayout() {
     // Fallback when no company is found - use default template
     console.warn('No company found, using default template');
-    this.sections = this.websiteService.getDefaultTemplate('home');
+    this.sections = this.filterHeaderFooter(this.websiteService.getDefaultTemplate('home'));
     this.loading = false;
   }
 
@@ -81,14 +81,22 @@ export class ModularHomeComponent implements OnInit {
     this.websiteService.getActiveLayout(companyId, 'home').subscribe({
       next: (layout) => {
         this.layout = layout;
-        this.sections = layout.layout_config.sections.sort((a, b) => a.order - b.order);
+        this.sections = this.filterHeaderFooter(layout.layout_config.sections).sort((a, b) => a.order - b.order);
         this.loading = false;
       },
       error: (err) => {
         console.warn('Could not load layout for company, using default template', err);
-        this.sections = this.websiteService.getDefaultTemplate('home');
+        this.sections = this.filterHeaderFooter(this.websiteService.getDefaultTemplate('home'));
         this.loading = false;
       }
+    });
+  }
+
+  // Filter out header and footer sections since they're already in app.html
+  private filterHeaderFooter(sections: FlexibleLayoutSection[]): FlexibleLayoutSection[] {
+    return sections.filter(section => {
+      const type = 'type' in section ? section.type : section.component_type;
+      return type !== 'header' && type !== 'footer';
     });
   }
 }

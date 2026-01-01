@@ -97,6 +97,36 @@
   padding-bottom: 2rem;
 }
 
+.carousel-nav {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.nav-btn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  background: transparent;
+  border-radius: 8px;
+  color: #003366;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.nav-btn:hover {
+  background: #003366;
+  color: white;
+}
+
+.nav-btn i {
+  font-size: 12px;
+}
+
 .error-message {
   text-align: center;
   padding: 3rem 1rem;

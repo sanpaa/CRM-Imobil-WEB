@@ -5,10 +5,17 @@ import { CommonModule } from '@angular/common';
   selector: 'app-spacer-section',
   standalone: true,
   imports: [CommonModule],
-  template: '<div [ngStyle]="styleConfig"><p>Component: spacer-section</p></div>',
+  template: '<div [ngStyle]="getSpacerStyle()"></div>',
   styles: []
 })
 export class SpacerSectionComponent {
   @Input() config: any = {};
   @Input() styleConfig: any = {};
+
+  getSpacerStyle() {
+    return {
+      height: this.config.height || '2rem',
+      ...this.styleConfig
+    };
+  }
 }

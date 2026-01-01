@@ -21,6 +21,13 @@ import { CtaButtonSectionComponent } from '../sections/cta-button-section/cta-bu
 import { DividerSectionComponent } from '../sections/divider-section/divider-section';
 import { SpacerSectionComponent } from '../sections/spacer-section/spacer-section';
 import { LifestyleSectionComponent } from '../sections/lifestyle-section/lifestyle-section';
+import { FaqSectionComponent } from '../sections/faq-section/faq-section';
+import { FeaturesGridSectionComponent } from '../sections/features-grid-section/features-grid-section';
+import { NewsletterSectionComponent } from '../sections/newsletter-section/newsletter-section';
+import { MortgageCalculatorSectionComponent } from '../sections/mortgage-calculator-section/mortgage-calculator-section';
+import { CustomCodeSectionComponent } from '../sections/custom-code-section/custom-code-section';
+import { FlexContainerSectionComponent } from '../sections/flex-container-section/flex-container-section';
+import { GridContainerSectionComponent } from '../sections/grid-container-section/grid-container-section';
 
 @Component({
   selector: 'app-dynamic-section',
@@ -32,6 +39,7 @@ import { LifestyleSectionComponent } from '../sections/lifestyle-section/lifesty
 export class DynamicSectionComponent implements OnInit {
   @Input() section!: FlexibleLayoutSection;
   @Input() companyData: any;
+  @Input() companyId: string | null = null;
   @ViewChild('container', { read: ViewContainerRef, static: true }) container!: ViewContainerRef;
 
   private componentMap: { [key: string]: Type<any> } = {
@@ -52,7 +60,14 @@ export class DynamicSectionComponent implements OnInit {
     'cta-button': CtaButtonSectionComponent,
     'divider': DividerSectionComponent,
     'spacer': SpacerSectionComponent,
-    'lifestyle-section': LifestyleSectionComponent
+    'lifestyle-section': LifestyleSectionComponent,
+    'faq': FaqSectionComponent,
+    'features-grid': FeaturesGridSectionComponent,
+    'newsletter': NewsletterSectionComponent,
+    'mortgage-calculator': MortgageCalculatorSectionComponent,
+    'custom-code': CustomCodeSectionComponent,
+    'flex-container': FlexContainerSectionComponent,
+    'grid-container': GridContainerSectionComponent
   };
 
   ngOnInit() {
@@ -96,6 +111,11 @@ export class DynamicSectionComponent implements OnInit {
 
     this.container.clear();
     const componentRef: ComponentRef<any> = this.container.createComponent(component);
+    
+    // Pass companyId to the component if it accepts it
+    if (componentRef.instance.companyId !== undefined) {
+      componentRef.instance.companyId = this.companyId;
+    }
     
     // Pass configuration to the component
     componentRef.instance.config = this.getConfig(this.section);

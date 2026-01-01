@@ -20,16 +20,24 @@
     </div>
 
     <swiper-container 
+      #swiperRef
       *ngIf="!loading && !error && showCarousel" 
-      class="property-swiper" 
-      [attr.slides-per-view]="isMobile ? 1.1 : columns" 
-      space-between="24"
-      [attr.pagination]="isMobile ? '' : null"
+      class="property-swiper"
+      init="false"
     >
       <swiper-slide *ngFor="let property of properties">
         <app-property-card [property]="property"></app-property-card>
       </swiper-slide>
     </swiper-container>
+
+    <div class="carousel-nav" *ngIf="!loading && !error && showCarousel && !isMobile">
+      <button class="nav-btn prev" (click)="swiperPrev()">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <button class="nav-btn next" (click)="swiperNext()">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
 
     <div 
       *ngIf="!loading && !error && !showCarousel" 

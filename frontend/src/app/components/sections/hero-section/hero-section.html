@@ -1,4 +1,11 @@
-<section class="hero" [ngStyle]="styleConfig">
+<section 
+  class="hero" 
+  [ngStyle]="{
+    'background-image': backgroundImage ? 'url(' + backgroundImage + ')' : 'none',
+    'background-size': 'cover',
+    'background-position': 'center'
+  }"
+>
   <div class="hero-overlay"></div>
 
   <div class="container hero-content" [ngClass]="'align-' + alignment">

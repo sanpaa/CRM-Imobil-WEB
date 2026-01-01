@@ -111,7 +111,7 @@ import { RouterModule, Router } from '@angular/router'; // Adicionado Router aqu
 import { PropertyCardComponent } from '../../components/property-card/property-card';
 import { PropertyService } from '../../services/property';
 import { Property } from '../../models/property.model';
-import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit, ViewChild } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { register } from 'swiper/element/bundle';
 register();
 
@@ -123,7 +123,7 @@ register();
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, AfterViewInit {
   properties: Property[] = [];
   visibleProperties: Property[] = [];
 
@@ -134,7 +134,7 @@ export class HomeComponent implements OnInit {
   pageSize = 3;
   currentIndex = 0;
   isMobile = false;
-  @ViewChild('swiperRef', { static: false }) swiper?: any;
+  @ViewChild('swiperRef', { static: false }) swiper?: ElementRef;
 
   // Adicionado o Router no construtor
   constructor(
@@ -150,6 +150,29 @@ export class HomeComponent implements OnInit {
       this.checkIfMobile();
       this.updateVisible();
     });
+  }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      if (this.swiper?.nativeElement) {
+        const swiperEl = this.swiper.nativeElement;
+        Object.assign(swiperEl, {
+          slidesPerView: this.isMobile ? 1.1 : 3,
+          spaceBetween: 24,
+          breakpoints: {
+            768: {
+              slidesPerView: 3,
+              spaceBetween: 24
+            },
+            0: {
+              slidesPerView: 1.1,
+              spaceBetween: 16
+            }
+          }
+        });
+        swiperEl.initialize();
+      }
+    }, 100);
   }
 
   // Função que resolve o erro do clique nos cards de Lifestyle
