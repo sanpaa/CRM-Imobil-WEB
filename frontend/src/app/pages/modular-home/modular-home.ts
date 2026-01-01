@@ -42,45 +42,22 @@ export class ModularHomeComponent implements OnInit {
     // Get the domain from window location
     const domain = window.location.hostname;
     
-    // For local development or if no specific domain is configured,
-    // try to get the first available default layout
+    // For local development, use localhost as domain to get default company
     // In production, this would use the actual domain
     if (domain === 'localhost' || domain.startsWith('127.0.0.1')) {
-      // Try to load default layout from first company with active default layout
-      this.loadDefaultLayout();
+      // Load by localhost domain to get default company
+      this.loadByDomain('localhost');
     } else {
-      // Load by domain
+      // Load by actual domain
       this.loadByDomain(domain);
     }
   }
 
   loadDefaultLayout() {
-    // For development: Try to get any active default home layout
-    // We'll make a direct API call to get layouts and find the first active default one
-    this.http.get<WebsiteLayout[]>(`${environment.apiUrl}/api/website/layouts?page_type=home`).subscribe({
-      next: (layouts) => {
-        // Find the first active default layout
-        const defaultLayout = layouts.find(l => l.is_active && l.is_default);
-        if (defaultLayout) {
-          this.layout = defaultLayout;
-          this.sections = defaultLayout.layout_config.sections.sort((a, b) => a.order - b.order);
-        } else if (layouts.length > 0) {
-          // If no default, use first active layout
-          const activeLayout = layouts.find(l => l.is_active) || layouts[0];
-          this.layout = activeLayout;
-          this.sections = activeLayout.layout_config.sections.sort((a, b) => a.order - b.order);
-        } else {
-          // Use fallback template
-          this.sections = this.websiteService.getDefaultTemplate('home');
-        }
-        this.loading = false;
-      },
-      error: (err) => {
-        console.warn('Could not load layout from API, using default template', err);
-        this.sections = this.websiteService.getDefaultTemplate('home');
-        this.loading = false;
-      }
-    });
+    // Fallback when no company is found - use default template
+    console.warn('No company found, using default template');
+    this.sections = this.websiteService.getDefaultTemplate('home');
+    this.loading = false;
   }
 
   loadByDomain(domain: string) {

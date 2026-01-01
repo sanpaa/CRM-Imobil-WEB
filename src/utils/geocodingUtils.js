@@ -226,9 +226,9 @@ async function geocodeWithFallback(propertyData) {
         }
     }
     
-    // Strategy 2: City + State + Postal Code (often more reliable in Brazil)
-    if (propertyData.zipCode && propertyData.city && propertyData.state) {
-        const zipAddress = `${propertyData.zipCode}, ${propertyData.city}, ${propertyData.state}, Brasil`;
+    // Strategy 2: Postal Code only (CEP is precise in Brazil and shouldn't be mixed with city/state)
+    if (propertyData.zipCode) {
+        const zipAddress = `${propertyData.zipCode}, Brasil`;
         strategies.push({ name: 'Postal code', address: zipAddress });
     }
     

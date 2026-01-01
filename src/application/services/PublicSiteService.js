@@ -16,16 +16,24 @@ class PublicSiteService {
      */
     async getSiteConfig(domain) {
         try {
-            // 1. Find company by domain
-            const company = await this.companyRepository.findByDomain(domain);
+            let company;
             
-            if (!company) {
-                throw new Error('Company not found for domain: ' + domain);
-            }
-
-            // Check if website is enabled and published
-            if (!company.website_enabled || !company.website_published) {
-                throw new Error('Website not enabled for this company');
+            // Special handling for localhost/development
+            if (domain === 'localhost' || domain === '127.0.0.1') {
+                // For development, get the first company with website enabled
+                company = await this.companyRepository.findFirstWithWebsiteEnabled();
+                
+                // If no company found, return a helpful error
+                if (!company) {
+                    throw new Error('No companies with enabled websites found. Please create a company and enable its website first.');
+                }
+            } else {
+                // Production: find by actual domain
+                company = await this.companyRepository.findByDomain(domain);
+                
+                if (!company) {
+                    throw new Error('Company not found for domain: ' + domain);
+                }
             }
 
             // 2. Get company settings (branding, contact info, etc.)

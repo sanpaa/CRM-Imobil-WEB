@@ -50,7 +50,12 @@ class SupabaseCompanyRepository {
             return null;
         }
     }
-
+    async findFirstWithWebsiteEnabled() {
+        const result = await db.query(
+            'SELECT * FROM companies WHERE website_enabled = true AND website_published = true LIMIT 1'
+        );
+        return result.rows[0] || null;
+    }
     /**
      * Find company by ID
      */
