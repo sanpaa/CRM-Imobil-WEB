@@ -3,7 +3,7 @@
  * Data access layer for website layouts
  */
 
-const { supabase } = require('../../infrastructure/database/supabase');
+const supabase = require('../../infrastructure/database/supabase');
 
 class SupabaseWebsiteRepository {
     async findAll(companyId, pageType = null) {
