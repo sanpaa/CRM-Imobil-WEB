@@ -25,24 +25,7 @@ function createWebsiteRoutes(websiteService, authMiddleware) {
         }
     });
 
-    // Get a specific layout
-    router.get('/layouts/:id', async (req, res) => {
-        try {
-            const { id } = req.params;
-            const layout = await websiteService.getLayout(id);
-            
-            if (!layout) {
-                return res.status(404).json({ error: 'Layout not found' });
-            }
-
-            res.json(layout);
-        } catch (error) {
-            console.error('Error fetching layout:', error);
-            res.status(500).json({ error: 'Failed to fetch layout' });
-        }
-    });
-
-    // Get active layout for a page type
+    // Get active layout for a page type (MUST come before /:id route)
     router.get('/layouts/active', async (req, res) => {
         try {
             const { company_id, page_type } = req.query;
@@ -64,6 +47,23 @@ function createWebsiteRoutes(websiteService, authMiddleware) {
         } catch (error) {
             console.error('Error fetching active layout:', error);
             res.status(500).json({ error: 'Failed to fetch active layout' });
+        }
+    });
+
+    // Get a specific layout by ID
+    router.get('/layouts/:id', async (req, res) => {
+        try {
+            const { id } = req.params;
+            const layout = await websiteService.getLayout(id);
+            
+            if (!layout) {
+                return res.status(404).json({ error: 'Layout not found' });
+            }
+
+            res.json(layout);
+        } catch (error) {
+            console.error('Error fetching layout:', error);
+            res.status(500).json({ error: 'Failed to fetch layout' });
         }
     });
 
