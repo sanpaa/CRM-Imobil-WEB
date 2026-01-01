@@ -60,7 +60,6 @@ class SupabaseCompanyRepository {
                 .from('companies')
                 .select('*')
                 .eq('website_enabled', true)
-                .eq('website_published', true)
                 .limit(1)
                 .maybeSingle();
 

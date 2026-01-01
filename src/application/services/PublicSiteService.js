@@ -160,8 +160,8 @@ class PublicSiteService {
                 throw new Error('Company not found: ' + companyId);
             }
 
-            // Check if website is enabled and published
-            if (!company.website_enabled || !company.website_published) {
+            // Check if website is enabled (published check removed for flexibility)
+            if (!company.website_enabled) {
                 throw new Error('Website not enabled for this company');
             }
 
