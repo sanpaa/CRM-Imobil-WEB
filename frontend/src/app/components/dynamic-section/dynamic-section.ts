@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { LayoutSection } from '../../models/website-layout.model';
 
 // Import all section component types
+import { HeaderComponent } from '../header/header';
+import { FooterComponent } from '../footer/footer';
 import { HeroSectionComponent } from '../sections/hero-section/hero-section';
 import { PropertyGridSectionComponent } from '../sections/property-grid-section/property-grid-section';
 import { SearchBarSectionComponent } from '../sections/search-bar-section/search-bar-section';
@@ -33,6 +35,8 @@ export class DynamicSectionComponent implements OnInit {
   @ViewChild('container', { read: ViewContainerRef, static: true }) container!: ViewContainerRef;
 
   private componentMap: { [key: string]: Type<any> } = {
+    'header': HeaderComponent,
+    'footer': FooterComponent,
     'hero': HeroSectionComponent,
     'property-grid': PropertyGridSectionComponent,
     'search-bar': SearchBarSectionComponent,
@@ -56,19 +60,22 @@ export class DynamicSectionComponent implements OnInit {
   }
 
   loadComponent() {
-    const componentType = this.componentMap[this.section.component_type];
+    // Support both component_type (model) and type (database) field names
+    const componentType = (this.section as any).component_type || (this.section as any).type;
+    const component = this.componentMap[componentType];
     
-    if (!componentType) {
-      console.warn(`Component type ${this.section.component_type} not found`);
+    if (!component) {
+      console.warn(`Component type ${componentType} not found`);
       return;
     }
 
     this.container.clear();
-    const componentRef: ComponentRef<any> = this.container.createComponent(componentType);
+    const componentRef: ComponentRef<any> = this.container.createComponent(component);
     
     // Pass configuration to the component
     componentRef.instance.config = this.section.config || {};
-    componentRef.instance.styleConfig = this.section.style_config || {};
+    // Support both style_config (model) and style (database) field names
+    componentRef.instance.styleConfig = (this.section as any).style_config || (this.section as any).style || {};
     
     // Pass company data if available
     if (this.companyData) {
@@ -79,19 +86,20 @@ export class DynamicSectionComponent implements OnInit {
   getSectionStyles(): any {
     const styles: any = {};
     
-    if (this.section.style_config) {
-      if (this.section.style_config.backgroundColor) {
-        styles['background-color'] = this.section.style_config.backgroundColor;
-      }
-      if (this.section.style_config.textColor) {
-        styles['color'] = this.section.style_config.textColor;
-      }
-      if (this.section.style_config.padding) {
-        styles['padding'] = this.section.style_config.padding;
-      }
-      if (this.section.style_config.margin) {
-        styles['margin'] = this.section.style_config.margin;
-      }
+    // Support both style_config (model) and style (database) field names
+    const styleConfig = (this.section as any).style_config || (this.section as any).style || {};
+    
+    if (styleConfig.backgroundColor) {
+      styles['background-color'] = styleConfig.backgroundColor;
+    }
+    if (styleConfig.textColor) {
+      styles['color'] = styleConfig.textColor;
+    }
+    if (styleConfig.padding) {
+      styles['padding'] = styleConfig.padding;
+    }
+    if (styleConfig.margin) {
+      styles['margin'] = styleConfig.margin;
     }
     
     return styles;

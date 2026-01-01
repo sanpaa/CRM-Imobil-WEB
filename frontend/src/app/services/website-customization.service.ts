@@ -26,9 +26,9 @@ export class WebsiteCustomizationService {
 
   // Layout operations
   getLayouts(companyId: string): Observable<WebsiteLayout[]> {
+    // Public endpoint - no auth required for viewing layouts
     return this.http.get<WebsiteLayout[]>(
-      `${this.apiUrl}/layouts?company_id=${companyId}`,
-      { headers: this.getHeaders() }
+      `${this.apiUrl}/layouts?company_id=${companyId}`
     );
   }
 
@@ -40,9 +40,9 @@ export class WebsiteCustomizationService {
   }
 
   getActiveLayout(companyId: string, pageType: string): Observable<WebsiteLayout> {
+    // Public endpoint - no auth required for viewing active layouts
     return this.http.get<WebsiteLayout>(
-      `${this.apiUrl}/layouts/active?company_id=${companyId}&page_type=${pageType}`,
-      { headers: this.getHeaders() }
+      `${this.apiUrl}/layouts/active?company_id=${companyId}&page_type=${pageType}`
     );
   }
 
