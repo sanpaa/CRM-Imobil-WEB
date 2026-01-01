@@ -18,10 +18,14 @@ class PublicSiteService {
         try {
             let company;
             
+            console.log('🔍 getSiteConfig called with domain:', domain);
+            
             // Special handling for localhost/development
             if (domain === 'localhost' || domain === '127.0.0.1') {
                 // For development, get the first company with website enabled
+                console.log('🔍 Searching for first company with website enabled...');
                 company = await this.companyRepository.findFirstWithWebsiteEnabled();
+                console.log('🔍 Found company:', company ? company.id : 'NONE');
                 
                 // If no company found, return a helpful error
                 if (!company) {
@@ -29,7 +33,9 @@ class PublicSiteService {
                 }
             } else {
                 // Production: find by actual domain
+                console.log('🔍 Searching for company by domain:', domain);
                 company = await this.companyRepository.findByDomain(domain);
+                console.log('🔍 Found company:', company ? company.id : 'NONE');
                 
                 if (!company) {
                     throw new Error('Company not found for domain: ' + domain);
