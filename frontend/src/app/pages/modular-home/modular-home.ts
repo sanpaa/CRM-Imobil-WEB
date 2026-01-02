@@ -1,102 +1,105 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Subject, takeUntil } from 'rxjs';
 import { DynamicSectionComponent } from '../../components/dynamic-section/dynamic-section';
-import { WebsiteCustomizationService } from '../../services/website-customization.service';
-import { WebsiteLayout, FlexibleLayoutSection } from '../../models/website-layout.model';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
-
-interface SiteConfigResponse {
-  success: boolean;
-  company?: {
-    id: string;
-    [key: string]: any;
-  };
-  [key: string]: any;
-}
+import { DomainDetectionService, PageConfig } from '../../services/domain-detection.service';
+import { SeoService } from '../../services/seo.service';
+import { FooterComponent } from '../../components/footer/footer';
 
 @Component({
   selector: 'app-modular-home',
   standalone: true,
-  imports: [CommonModule, DynamicSectionComponent],
+  imports: [CommonModule, DynamicSectionComponent, FooterComponent],
   templateUrl: './modular-home.html',
   styleUrls: ['./modular-home.css']
 })
-export class ModularHomeComponent implements OnInit {
-  layout: WebsiteLayout | null = null;
-  sections: FlexibleLayoutSection[] = [];
+export class ModularHomeComponent implements OnInit, OnDestroy {
+  pageConfig: PageConfig | null = null;
+  sections: any[] = [];
   loading = true;
   error = false;
-  companyId: string | null = null;
+  companyData: any = null;
+  footerConfig: any = {};
+  
+  private destroy$ = new Subject<void>();
 
   constructor(
-    private websiteService: WebsiteCustomizationService,
-    private http: HttpClient
+    private domainService: DomainDetectionService,
+    private seoService: SeoService
   ) {}
 
   ngOnInit() {
-    this.loadLayout();
-  }
-
-  loadLayout() {
-    // Get the domain from window location
-    const domain = window.location.hostname;
-    
-    // For local development, use localhost as domain to get default company
-    // In production, this would use the actual domain
-    if (domain === 'localhost' || domain.startsWith('127.0.0.1')) {
-      // Load by localhost domain to get default company
-      this.loadByDomain('localhost');
-    } else {
-      // Load by actual domain
-      this.loadByDomain(domain);
-    }
-  }
-
-  loadDefaultLayout() {
-    // Fallback when no company is found - use default template
-    console.warn('No company found, using default template');
-    this.sections = this.filterHeaderFooter(this.websiteService.getDefaultTemplate('home'));
-    this.loading = false;
-  }
-
-  loadByDomain(domain: string) {
-    // Get site config by domain which includes company_id
-    this.http.get<SiteConfigResponse>(`${environment.apiUrl}/api/site-config?domain=${domain}`).subscribe({
-      next: (config) => {
-        if (config.success && config.company && config.company.id) {
-          this.companyId = config.company.id;
-          this.loadLayoutForCompany(config.company.id);
-        } else {
-          this.loadDefaultLayout();
+    // Aguardar a configuração estar carregada
+    this.domainService.isConfigLoaded()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(loaded => {
+        if (loaded) {
+          this.loadPage();
         }
-      },
-      error: () => {
-        this.loadDefaultLayout();
-      }
-    });
+      });
   }
 
-  loadLayoutForCompany(companyId: string) {
-    this.websiteService.getActiveLayout(companyId, 'home').subscribe({
-      next: (layout) => {
-        this.layout = layout;
-        this.sections = this.filterHeaderFooter(layout.layout_config.sections).sort((a, b) => a.order - b.order);
-        this.loading = false;
-      },
-      error: (err) => {
-        console.warn('Could not load layout for company, using default template', err);
-        this.sections = this.filterHeaderFooter(this.websiteService.getDefaultTemplate('home'));
-        this.loading = false;
-      }
-    });
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
-  // Filter out header and footer sections since they're already in app.html
-  private filterHeaderFooter(sections: FlexibleLayoutSection[]): FlexibleLayoutSection[] {
-    return sections.filter(section => {
-      const type = 'type' in section ? section.type : section.component_type;
-      return type !== 'header' && type !== 'footer';
-    });
+  loadPage() {
+    // Get home page configuration
+    let homePage = this.domainService.getHomePage();
+    
+    console.log('🔍 DEBUG homePage:', homePage);
+    console.log('🔍 DEBUG siteConfig completo:', this.domainService.getSiteConfigValue());
+    
+    if (!homePage) {
+      console.error('❌ Nenhuma página encontrada');
+      this.loading = false;
+      this.error = true;
+      return;
+    }
+    
+    // Se não tem componentes, criar fallback
+    if (!homePage.components || homePage.components.length === 0) {
+      console.warn('⚠️ Backend sem componentes, usando fallback');
+      homePage = {
+        slug: 'home',
+        name: 'Home',
+        pageType: 'home',
+        components: [
+          { type: 'header', order: 0, config: {} },
+          { type: 'hero', order: 1, config: { title: 'Encontre seu Imóvel dos Sonhos', subtitle: 'As melhores ofertas do mercado' } },
+          { type: 'property-grid', order: 2, config: { title: 'Imóveis em Destaque', limit: 6 } },
+          { type: 'features-grid', order: 3, config: { title: 'Por que escolher a gente?' } },
+          { type: 'faq', order: 4, config: { title: 'Perguntas Frequentes' } },
+          { type: 'newsletter', order: 5, config: { title: 'Receba Novidades' } },
+          { type: 'mortgage-calculator', order: 6, config: { title: 'Simule seu Financiamento' } }
+        ],
+        meta: { title: 'Home' }
+      };
+    }
+    
+    this.pageConfig = homePage;
+    this.sections = homePage.components?.sort((a, b) => a.order - b.order) || [];
+    this.companyData = this.domainService.getCompanyInfo();
+    
+    console.log('🔍 DEBUG companyData:', this.companyData);
+    console.log('🔍 DEBUG footer_config:', this.companyData?.footer_config);
+    console.log('🔍 DEBUG siteConfig.company completo:', this.domainService.getSiteConfigValue()?.company);
+    
+    // Extrair config do footer se existir nos componentes
+    const footerComponent = homePage.components?.find(c => c.type === 'footer' || c.component_type === 'footer');
+    if (footerComponent) {
+      this.footerConfig = footerComponent.config || {};
+    }
+    
+    this.loading = false;
+    
+    console.log('✅ Página carregada com', this.sections.length, 'componentes');
+    console.log('📦 Componentes:', this.sections.map(s => s.type || s.component_type));
+    
+    // Update SEO
+    if (homePage.meta) {
+      this.seoService.updatePageSeo(homePage);
+    }
   }
 }

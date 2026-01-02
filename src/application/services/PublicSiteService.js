@@ -65,7 +65,9 @@ class PublicSiteService {
                     address: company.address || settings?.address,
                     logo_url: company.logo_url || settings?.logo,
                     description: settings?.description,
-                    whatsapp: settings?.whatsapp
+                    whatsapp: settings?.whatsapp,
+                    footer_config: company.footer_config  // ⬅️ ADICIONAR ESTA LINHA
+
                 },
                 pages: pages,
                 visualConfig: visualConfig,
@@ -81,19 +83,23 @@ class PublicSiteService {
      * Get all active layouts for a company
      */
     async _getActiveLayouts(companyId) {
-        const pageTypes = ['home', 'properties', 'property-detail', 'about', 'contact'];
-        const layouts = {};
+    console.log('🔍 _getActiveLayouts called for company:', companyId);
+    const pageTypes = ['home', 'properties', 'property-detail', 'about', 'contact'];
+    const layouts = {};
 
-        for (const pageType of pageTypes) {
-            const layout = await this.websiteRepository.findActive(companyId, pageType);
-            if (layout) {
-                layouts[pageType] = layout;
-            }
+    for (const pageType of pageTypes) {
+        console.log('🔍 Searching for layout:', pageType);
+        const layout = await this.websiteRepository.findActive(companyId, pageType);
+        console.log('🔍 Found layout for', pageType, ':', layout ? 'YES' : 'NO');
+        if (layout) {
+            console.log('🔍 Layout sections:', layout.layout_config?.sections?.length || 0);
+            layouts[pageType] = layout;
         }
-
-        return layouts;
     }
-
+    
+    console.log('🔍 Total layouts found:', Object.keys(layouts).length);
+    return layouts;
+}
     /**
      * Build pages configuration from layouts
      */
@@ -194,7 +200,9 @@ class PublicSiteService {
                     address: company.address || settings?.address,
                     logo_url: company.logo_url || settings?.logo,
                     description: settings?.description,
-                    whatsapp: settings?.whatsapp
+                    whatsapp: settings?.whatsapp,
+                    footer_config: company.footer_config 
+
                 },
                 pages: pages,
                 visualConfig: visualConfig,

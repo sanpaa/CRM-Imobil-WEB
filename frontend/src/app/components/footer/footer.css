@@ -1,8 +1,15 @@
 .footer {
-  background: linear-gradient(135deg, var(--brand-blue) 0%, #003380 100%);
+  background: var(--primary-color);
   color: white;
   padding: 3rem 0 1.5rem;
   margin-top: auto;
+  width: 100%;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
 }
 
 .footer-grid {

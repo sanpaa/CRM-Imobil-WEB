@@ -3,19 +3,24 @@
     <div class="header-content">
       <div class="logo">
         <a [routerLink]="['/']" class="logo-link">
-          <img src="assets/images/AC-Transparent.png" alt="Alan Carmo Corretor" class="logo-img" />
+          <img 
+            [src]="config?.logo || companyData?.logo || 'assets/images/AC-Transparent.png'" 
+            [alt]="companyData?.name || 'Logo'" 
+            class="logo-img" />
         </a>
       </div>
 
       <nav class="nav" id="nav" [class.active]="isMobileMenuOpen">
         <ul class="nav-list mb-0">
-          <li><a [routerLink]="['/']" fragment="inicio" class="nav-link" (click)="closeMobileMenu()">Início</a></li>
-          <li><a [routerLink]="['/']" fragment="servicos" class="nav-link" (click)="closeMobileMenu()">Serviços</a></li>
-          <li><a [routerLink]="['/']" fragment="imoveis" class="nav-link" (click)="closeMobileMenu()">Imóveis</a></li>
-          <li><a [routerLink]="['/buscar']" class="nav-link" (click)="closeMobileMenu()">Buscar</a></li>
+          <li><a [routerLink]="['/']" class="nav-link" (click)="closeMobileMenu()">Início</a></li>
+          <li><a [routerLink]="['/buscar']" class="nav-link" (click)="closeMobileMenu()">Imóveis</a></li>
+          <li><a [routerLink]="['/']" fragment="sobre" class="nav-link" (click)="closeMobileMenu()">Sobre</a></li>
           <li><a [routerLink]="['/']" fragment="contato" class="nav-link" (click)="closeMobileMenu()">Contato</a></li>
         </ul>
-        <a href="https://wa.me/5511999999999?text=Olá, gostaria de informações" class="btn btn-primary" target="_blank">
+        <a 
+          [href]="'https://wa.me/' + (config?.phone || companyData?.phone || '5511999999999')" 
+          class="btn btn-primary" 
+          target="_blank">
           <i class="fab fa-whatsapp"></i> WhatsApp
         </a>
       </nav>

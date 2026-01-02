@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
+import { Observable, BehaviorSubject, throwError, of, forkJoin } from 'rxjs';
+import { tap, catchError, shareReplay, switchMap, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 export interface SiteConfig {
@@ -38,6 +38,9 @@ export interface VisualConfig {
     primaryColor: string;
     secondaryColor: string;
     fontFamily: string;
+    backgroundColor?: string;
+    textColor?: string;
+    accentColor?: string;
   };
   branding: {
     logo?: string;
@@ -59,12 +62,26 @@ export interface VisualConfig {
   providedIn: 'root'
 })
 export class DomainDetectionService {
-  private apiUrl = `${environment.apiUrl}/api/public`;
+  private apiUrl = `${environment.apiUrl}/api`;
   private currentDomain$ = new BehaviorSubject<string>('');
   private siteConfig$ = new BehaviorSubject<SiteConfig | null>(null);
+  private isConfigLoaded$ = new BehaviorSubject<boolean>(false);
+  private configError$ = new BehaviorSubject<string | null>(null);
+  
+  // Cache for site config to avoid multiple API calls
+  private configCache: Map<string, Observable<SiteConfig>> = new Map();
 
   constructor(private http: HttpClient) {
-    this.detectDomain();
+    // Don't auto-detect on construction - let APP_INITIALIZER handle it
+  }
+
+  /**
+   * Initialize the service - detect domain and load config
+   * Called by APP_INITIALIZER
+   */
+  initialize(): Promise<SiteConfig> {
+    const domain = this.detectDomain();
+    return this.fetchSiteConfig(domain).toPromise() as Promise<SiteConfig>;
   }
 
   /**
@@ -77,21 +94,10 @@ export class DomainDetectionService {
 
     const hostname = window.location.hostname;
     
-    // Development/localhost fallback
+    // Development/localhost - usar "crm-imobil.netlify.app" para testes
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      // Check for query parameter override
-      const urlParams = new URLSearchParams(window.location.search);
-      const domainOverride = urlParams.get('domain');
-      
-      if (domainOverride) {
-        this.currentDomain$.next(domainOverride);
-        return domainOverride;
-      }
-      
-      // Default demo domain for development
-      const defaultDomain = 'demo.imobiliaria.com';
-      this.currentDomain$.next(defaultDomain);
-      return defaultDomain;
+      this.currentDomain$.next('crm-imobil.netlify.app');
+      return 'crm-imobil.netlify.app';
     }
 
     this.currentDomain$.next(hostname);
@@ -113,23 +119,73 @@ export class DomainDetectionService {
   }
 
   /**
-   * Fetch site configuration for current domain
+   * Get config loading status
+   */
+  isConfigLoaded(): Observable<boolean> {
+    return this.isConfigLoaded$.asObservable();
+  }
+
+  /**
+   * Get config error if any
+   */
+  getConfigError(): Observable<string | null> {
+    return this.configError$.asObservable();
+  }
+
+  /**
+   * Get config error value
+   */
+  getConfigErrorValue(): string | null {
+    return this.configError$.value;
+  }
+
+  /**
+   * Fetch site configuration for current domain with caching
    */
   fetchSiteConfig(domain?: string): Observable<SiteConfig> {
     const targetDomain = domain || this.getCurrentDomainValue();
     
-    return this.http.get<SiteConfig>(
+    if (!targetDomain) {
+      const error = 'No domain detected';
+      this.configError$.next(error);
+      this.isConfigLoaded$.next(true);
+      return throwError(() => new Error(error));
+    }
+
+    // Check cache first
+    if (this.configCache.has(targetDomain)) {
+      return this.configCache.get(targetDomain)!;
+    }
+
+    // Make request and cache it
+    const request$ = this.http.get<SiteConfig>(
       `${this.apiUrl}/site-config?domain=${encodeURIComponent(targetDomain)}`
     ).pipe(
       tap(config => {
         this.siteConfig$.next(config);
-        this.applyVisualConfig(config.visualConfig);
+        this.isConfigLoaded$.next(true);
+        this.configError$.next(null);
+        console.log('Site config loaded for domain:', targetDomain);
+        console.log('Company data with footer_config:', config.company);
+        console.log('Pages loaded:', config.pages);
       }),
       catchError(error => {
+        const errorMsg = error.status === 404 
+          ? `Domain not found: ${targetDomain}` 
+          : 'Error loading site configuration';
+        
+        this.configError$.next(errorMsg);
+        this.isConfigLoaded$.next(true);
+        this.siteConfig$.next(null);
+        
         console.error('Error fetching site config:', error);
-        throw error;
-      })
+        return throwError(() => error);
+      }),
+      shareReplay(1) // Share the result with multiple subscribers
     );
+
+    this.configCache.set(targetDomain, request$);
+    return request$;
   }
 
   /**
@@ -141,7 +197,14 @@ export class DomainDetectionService {
     ).pipe(
       tap(config => {
         this.siteConfig$.next(config);
-        this.applyVisualConfig(config.visualConfig);
+        this.isConfigLoaded$.next(true);
+        this.configError$.next(null);
+      }),
+      catchError(error => {
+        this.configError$.next('Error loading site configuration');
+        this.isConfigLoaded$.next(true);
+        console.error('Error fetching site config by company:', error);
+        return throwError(() => error);
       })
     );
   }
@@ -161,27 +224,23 @@ export class DomainDetectionService {
   }
 
   /**
-   * Apply visual configuration to the page
+   * Clear cache for a specific domain
    */
-  private applyVisualConfig(visualConfig: VisualConfig): void {
-    if (typeof document === 'undefined') {
-      return;
+  clearCache(domain?: string): void {
+    if (domain) {
+      this.configCache.delete(domain);
+    } else {
+      this.configCache.clear();
     }
+  }
 
-    const root = document.documentElement;
-    
-    // Apply theme colors
-    if (visualConfig.theme.primaryColor) {
-      root.style.setProperty('--primary-color', visualConfig.theme.primaryColor);
-    }
-    
-    if (visualConfig.theme.secondaryColor) {
-      root.style.setProperty('--secondary-color', visualConfig.theme.secondaryColor);
-    }
-    
-    if (visualConfig.theme.fontFamily) {
-      root.style.setProperty('--font-family', visualConfig.theme.fontFamily);
-    }
+  /**
+   * Reload current site configuration
+   */
+  reloadConfig(): Observable<SiteConfig> {
+    const domain = this.getCurrentDomainValue();
+    this.clearCache(domain);
+    return this.fetchSiteConfig(domain);
   }
 
   /**
@@ -194,6 +253,27 @@ export class DomainDetectionService {
     }
 
     return config.pages.find(page => page.slug === slug) || null;
+  }
+
+  /**
+   * Get all pages
+   */
+  getAllPages(): PageConfig[] {
+    const config = this.getSiteConfigValue();
+    return config?.pages || [];
+  }
+
+  /**
+   * Get home page
+   */
+  getHomePage(): PageConfig | null {
+    const config = this.getSiteConfigValue();
+    if (!config || !config.pages || config.pages.length === 0) {
+      return null;
+    }
+
+    // Find page with slug '/' or 'home' or the first page
+    return config.pages.find(p => p.slug === '/' || p.slug === 'home') || config.pages[0];
   }
 
   /**
@@ -214,5 +294,19 @@ export class DomainDetectionService {
     }
 
     return false;
+  }
+
+  /**
+   * Get company info
+   */
+  getCompanyInfo() {
+    return this.siteConfig$.value?.company;
+  }
+
+  /**
+   * Get visual config
+   */
+  getVisualConfig() {
+    return this.siteConfig$.value?.visualConfig;
   }
 }

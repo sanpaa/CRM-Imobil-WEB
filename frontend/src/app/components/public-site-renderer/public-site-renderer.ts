@@ -1,10 +1,14 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
 import { Subject, takeUntil, filter } from 'rxjs';
 import { DomainDetectionService, SiteConfig, PageConfig } from '../../services/domain-detection.service';
 import { DynamicSectionComponent } from '../dynamic-section/dynamic-section';
 
+/**
+ * Component for rendering public site pages dynamically
+ * Supports both standalone mode and input-driven mode
+ */
 @Component({
   selector: 'app-public-site-renderer',
   standalone: true,
@@ -15,7 +19,7 @@ import { DynamicSectionComponent } from '../dynamic-section/dynamic-section';
       <div *ngFor="let section of currentPageSections">
         <app-dynamic-section 
           [section]="section"
-          [companyData]="siteConfig?.company">
+          [companyData]="companyData || siteConfig?.company">
         </app-dynamic-section>
       </div>
     </div>
@@ -76,13 +80,22 @@ import { DynamicSectionComponent } from '../dynamic-section/dynamic-section';
     }
   `]
 })
-export class PublicSiteRendererComponent implements OnInit, OnDestroy {
+export class PublicSiteRendererComponent implements OnInit, OnDestroy, OnChanges {
+  // Optional inputs for direct page rendering (allows component to work standalone or with external data)
+  @Input() pageConfig?: PageConfig;
+  @Input() companyInfo?: any;
+  
   siteConfig: SiteConfig | null = null;
   currentPage: PageConfig | null = null;
   currentPageSections: any[] = [];
   loading = true;
   error = false;
   errorMessage = '';
+  
+  // Computed property for company data
+  get companyData() {
+    return this.companyInfo || this.siteConfig?.company;
+  }
   
   private destroy$ = new Subject<void>();
 
@@ -92,7 +105,15 @@ export class PublicSiteRendererComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Load site configuration
+    // If pageConfig is provided as input, use it directly
+    if (this.pageConfig) {
+      this.currentPage = this.pageConfig;
+      this.currentPageSections = this.pageConfig.components || [];
+      this.loading = false;
+      return;
+    }
+
+    // Otherwise, load site configuration
     this.loadSiteConfig();
 
     // Listen to route changes
@@ -109,6 +130,15 @@ export class PublicSiteRendererComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // Handle changes to input properties
+    if (changes['pageConfig'] && this.pageConfig) {
+      this.currentPage = this.pageConfig;
+      this.currentPageSections = this.pageConfig.components || [];
+      this.loading = false;
+    }
   }
 
   /**
