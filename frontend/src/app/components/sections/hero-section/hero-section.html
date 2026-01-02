@@ -1,9 +1,12 @@
 <section 
   class="hero" 
   [ngStyle]="{
+    'background-color': styleConfig?.backgroundColor || 'var(--primary-color)',
+    'color': styleConfig?.textColor || '#ffffff',
     'background-image': backgroundImage ? 'url(' + backgroundImage + ')' : 'none',
     'background-size': 'cover',
-    'background-position': 'center'
+    'background-position': 'center',
+    'padding': styleConfig?.padding || '4rem 0'
   }"
 >
   <div class="hero-overlay"></div>

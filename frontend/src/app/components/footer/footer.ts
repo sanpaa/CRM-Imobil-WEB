@@ -41,6 +41,14 @@ export class FooterComponent {
            '';
   }
   
+  getBackgroundColor(): string {
+    return this.companyData?.footer_config?.backgroundColor || 'var(--primary-color)';
+  }
+  
+  getTextColor(): string {
+    return this.companyData?.footer_config?.textColor || '#ffffff';
+  }
+  
   getWhatsAppLink(): string {
     const phone = this.companyData?.footer_config?.whatsapp || 
                   this.companyData?.footer_config?.phone || 
